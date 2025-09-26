@@ -1,6 +1,23 @@
-.card{ @apply bg-white rounded-2xl shadow p-4; }
-.card-title{ @apply text-xl font-semibold mb-2; }
+/* cards */
+.card{ @apply bg-white rounded-2xl shadow p-4 border border-emerald-100; }
+.card-head{ @apply flex items-center justify-between mb-2; }
+.card-title{ @apply text-xl font-semibold; }
 .card-body{ @apply space-y-2; }
-.btn{ @apply bg-emerald-600 text-white px-4 py-2 rounded-xl shadow; }
-.btn-secondary{ @apply bg-white text-emerald-700 border border-emerald-600 px-4 py-2 rounded-xl; }
+
+/* buttons */
+.btn{ @apply bg-emerald-600 text-white px-4 py-2 rounded-xl shadow active:scale-[.98] transition; }
+.btn-secondary{ @apply bg-white text-emerald-700 border border-emerald-600 px-4 py-2 rounded-xl active:scale-[.98] transition; }
+.btn-ghost{ @apply bg-transparent text-emerald-700 px-3 py-2 rounded-lg hover:bg-emerald-50; }
 .icon-btn{ @apply text-xl leading-none px-2 py-1 rounded-lg hover:bg-emerald-50; }
+
+/* skeleton */
+.skeleton{ @apply w-full rounded-xl bg-slate-200/60 animate-pulse; }
+
+/* toast */
+.toast{
+  @apply fixed left-1/2 -translate-x-1/2 bottom-6 px-4 py-3 rounded-xl text-white shadow-lg z-50;
+  background: #10b981;
+}
+
+/* accessibility */
+:focus-visible{ outline: 2px solid #10b981; outline-offset: 2px; }

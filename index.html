@@ -10,45 +10,67 @@
 </head>
 <body class="bg-emerald-50 text-slate-900">
   <div id="app" class="max-w-xl mx-auto p-4">
-    <header class="mb-4 flex items-center gap-3">
-      <img src="/assets/icons/sprout.svg" alt="" class="w-10 h-10" />
+    <!-- Header -->
+    <header class="mb-5 flex items-center gap-3">
+      <img src="/assets/icons/sprout.svg" alt="" class="w-10 h-10 text-emerald-700" />
       <div>
-        <h1 class="text-2xl font-bold">Алёшка</h1>
+        <h1 class="text-3xl font-extrabold tracking-tight">Алёшка</h1>
         <p class="text-sm text-slate-600">Бабушкин помощник: огород • луна • важно</p>
       </div>
     </header>
 
+    <!-- Cards -->
     <main class="space-y-4">
+      <!-- Lunar -->
       <section id="card-lunar" class="card">
-        <div class="flex items-center justify-between">
-          <h2 class="card-title">Лунный календарь</h2>
+        <div class="card-head">
+          <div class="flex items-center gap-2">
+            <img src="/assets/icons/moon.svg" class="w-6 h-6" alt="" />
+            <h2 class="card-title">Лунный календарь</h2>
+          </div>
           <button class="icon-btn" data-say="#lunar-content" aria-label="Озвучить">🔊</button>
         </div>
-        <div id="lunar-content" class="card-body text-lg"></div>
+        <div id="lunar-skel" class="skeleton h-16"></div>
+        <div id="lunar-content" class="card-body text-lg hidden"></div>
       </section>
 
+      <!-- Garden -->
       <section id="card-garden" class="card">
-        <div class="flex items-center justify-between">
-          <h2 class="card-title">Совет по огороду</h2>
+        <div class="card-head">
+          <div class="flex items-center gap-2">
+            <img src="/assets/icons/plant.svg" class="w-6 h-6" alt="" />
+            <h2 class="card-title">Совет по огороду</h2>
+          </div>
           <button class="icon-btn" data-say="#garden-content" aria-label="Озвучить">🔊</button>
         </div>
-        <div id="garden-content" class="card-body text-lg"></div>
+        <div id="garden-skel" class="skeleton h-20"></div>
+        <div id="garden-content" class="card-body text-lg hidden"></div>
       </section>
 
+      <!-- Important -->
       <section id="card-important" class="card">
-        <div class="flex items-center justify-between">
-          <h2 class="card-title">Важно сегодня</h2>
+        <div class="card-head">
+          <div class="flex items-center gap-2">
+            <img src="/assets/icons/shield.svg" class="w-6 h-6" alt="" />
+            <h2 class="card-title">Важно сегодня</h2>
+          </div>
           <button class="icon-btn" data-say="#important-content" aria-label="Озвучить">🔊</button>
         </div>
-        <div id="important-content" class="card-body text-lg"></div>
+        <div id="important-skel" class="skeleton h-16"></div>
+        <div id="important-content" class="card-body text-lg hidden"></div>
       </section>
     </main>
 
+    <!-- Footer -->
     <footer class="mt-6 flex gap-3">
       <button id="btn-voice-all" class="btn">Озвучить всё</button>
       <button id="btn-done" class="btn-secondary">Отметить «сделано»</button>
+      <button id="btn-demo" class="btn-ghost ml-auto">Демо</button>
     </footer>
   </div>
+
+  <!-- Toasts -->
+  <div id="toast" class="toast hidden"></div>
 
   <script src="/assets/app.js"></script>
 </body>
