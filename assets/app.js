@@ -42,6 +42,7 @@ const monthsRu = [
 const cache = (window.__aly_cache = window.__aly_cache || { lunar: {} });
 
 const state = {
+
   activeTab: 'home',
   today: new Date().toISOString().slice(0, 10),
   region: localStorage.getItem('region') || 'RU-MOW',
@@ -54,6 +55,7 @@ const state = {
   currentMonth: '2025-12',
   calendarData: null,
   demo: false,
+
 };
 
 const speak = (text) => {
@@ -294,75 +296,7 @@ function hideSkeleton(skeletonSelector, contentEl) {
   contentEl?.classList.remove('hidden');
 }
 
-function renderGarden() {
-  const list = $('#garden-list');
-  if (!list) return;
-  if (!state.garden.length) {
-    list.innerHTML = '<p class="text-center text-slate-500">Нет советов для отображения.</p>';
-    return;
-  }
-
-  const fragment = document.createDocumentFragment();
-  state.garden.forEach((tip) => {
-    const item = document.createElement('button');
-    item.type = 'button';
-    item.className = 'card text-left transition-all garden-card';
-    item.setAttribute('data-culture', tip.culture || 'сад');
-    const diff = tip.difficulty || 'easy';
-    const diffLabel = diff === 'hard' ? 'Опыт' : diff === 'medium' ? 'Вдумчиво' : 'Легко';
-    const diffClass = diff === 'hard' ? 'badge badge--bad' : diff === 'medium' ? 'badge badge--info' : 'badge badge--good';
-
-    item.innerHTML = `
-      <div class="flex items-center justify-between gap-3 mb-3">
-        <div class="flex items-center gap-3">
-          <div class="icon-chip">
-            <img src="/assets/icons/plant.svg" alt="${tip.culture || 'Культура'}" class="w-6 h-6" />
-          </div>
-          <div>
-            <p class="font-semibold text-lg">${tip.title}</p>
-            <p class="text-sm text-slate-500">${tip.culture || 'сад'}</p>
-          </div>
-        </div>
-        <span class="${diffClass}">${diffLabel}</span>
-      </div>
-      <p class="text-sm text-slate-600">${(tip.steps || []).slice(0, 2).join('. ')}</p>
-    `;
-    fragment.appendChild(item);
-  });
-  list.innerHTML = '';
-  list.appendChild(fragment);
-}
-
-function renderImportant() {
-  const list = $('#important-list');
-  if (!list) return;
-  if (!state.important.length) {
-    list.innerHTML = '<p class="text-center text-slate-500">Пока нет важных дел.</p>';
-    return;
-  }
-
-  const fragment = document.createDocumentFragment();
-  state.important.forEach((item, index) => {
-    const card = document.createElement('article');
-    card.className = 'card space-y-3';
-    card.innerHTML = `
-      <div class="flex items-center gap-3">
-        <div class="icon-chip">
-          <img src="/assets/icons/important.svg" alt="${item.topic || 'важно'}" class="w-6 h-6" />
-        </div>
-        <div>
-          <p class="font-semibold text-lg">${item.title}</p>
-          <p class="text-sm text-slate-500">${item.topic || 'важно'}</p>
-        </div>
-      </div>
-      <p>${item.summary || ''}</p>
-      ${renderCTA(item.cta || (index % 3 === 0 ? { type: 'done' } : null))}
-    `;
-    fragment.appendChild(card);
-  });
-  list.innerHTML = '';
-  list.appendChild(fragment);
-}
+// ...existing code...
 
 function getDayCategory(day, meta = {}) {
   if (!meta) return null;
@@ -865,6 +799,7 @@ function renderPlantingList(planting, monthIso = state.currentMonth) {
   skeleton?.classList.add('hidden');
   list.classList.remove('hidden');
 }
+
 
 function setActiveTab(tab) {
   if (state.activeTab === tab) return;

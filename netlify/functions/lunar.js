@@ -68,9 +68,16 @@ exports.handler = async (event) => {
     }
   }
 
+  const calendarFile = path.join(__dirname, '..', '..', 'data', `calendar_${month}.json`);
+  let calendar = null;
+  if (fs.existsSync(calendarFile)) {
+    calendar = JSON.parse(fs.readFileSync(calendarFile, 'utf-8'));
+  }
   return {
     statusCode: 200,
     headers: { 'Content-Type': 'application/json; charset=utf-8' },
+
     body: JSON.stringify({ ...lunar, guides }),
+
   };
 };
