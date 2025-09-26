@@ -1,0 +1,10 @@
+{
+  "name": "Alyoshka Dev",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:20",
+  "features": { "ghcr.io/devcontainers/features/node:1": { "version": "20" } },
+  "postCreateCommand": "npm i -g netlify-cli && cd bot && npm i || true",
+  "forwardPorts": [8888],
+  "customizations": {
+    "vscode": { "extensions": ["esbenp.prettier-vscode","dbaeumer.vscode-eslint"] }
+  }
+}

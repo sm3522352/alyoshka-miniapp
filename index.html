@@ -19,25 +19,33 @@
     </header>
 
     <main class="space-y-4">
-      <!-- Cards -->
       <section id="card-lunar" class="card">
-        <h2 class="card-title">Лунный календарь</h2>
+        <div class="flex items-center justify-between">
+          <h2 class="card-title">Лунный календарь</h2>
+          <button class="icon-btn" data-say="#lunar-content" aria-label="Озвучить">🔊</button>
+        </div>
         <div id="lunar-content" class="card-body text-lg"></div>
       </section>
 
       <section id="card-garden" class="card">
-        <h2 class="card-title">Совет по огороду</h2>
+        <div class="flex items-center justify-between">
+          <h2 class="card-title">Совет по огороду</h2>
+          <button class="icon-btn" data-say="#garden-content" aria-label="Озвучить">🔊</button>
+        </div>
         <div id="garden-content" class="card-body text-lg"></div>
       </section>
 
       <section id="card-important" class="card">
-        <h2 class="card-title">Важно сегодня</h2>
+        <div class="flex items-center justify-between">
+          <h2 class="card-title">Важно сегодня</h2>
+          <button class="icon-btn" data-say="#important-content" aria-label="Озвучить">🔊</button>
+        </div>
         <div id="important-content" class="card-body text-lg"></div>
       </section>
     </main>
 
     <footer class="mt-6 flex gap-3">
-      <button id="btn-voice" class="btn">Озвучить</button>
+      <button id="btn-voice-all" class="btn">Озвучить всё</button>
       <button id="btn-done" class="btn-secondary">Отметить «сделано»</button>
     </footer>
   </div>

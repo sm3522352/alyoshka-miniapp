@@ -1,0 +1,6 @@
+node_modules/
+netlify/.netlify
+.netlify
+.DS_Store
+.env
+bot/node_modules/
