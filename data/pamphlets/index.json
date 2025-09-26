@@ -1,0 +1,32 @@
+[
+  {
+    "id": "ukrytie-roz-zimoy",
+    "title": "Укрытие роз зимой",
+    "file": "/data/pamphlets/ukrytie-roz-zimoy.pdf",
+    "description": "Как безопасно утеплить кусты и проветривать укрытия"
+  },
+  {
+    "id": "minudobreniya-tablica",
+    "title": "Минудобрения: таблица",
+    "file": "/data/pamphlets/minudobreniya-tablica.pdf",
+    "description": "Расшифровка основных элементов питания растений"
+  },
+  {
+    "id": "oshibki-pri-polive",
+    "title": "Ошибки при поливе",
+    "file": "/data/pamphlets/oshibki-pri-polive.pdf",
+    "description": "Пять шагов, чтобы не загубить корневую систему"
+  },
+  {
+    "id": "baza-rassada",
+    "title": "Базовый календарь рассады",
+    "file": "/data/pamphlets/baza-rassada.pdf",
+    "description": "Мини-план подготовки рассады с января по март"
+  },
+  {
+    "id": "nelzya-polnolunie",
+    "title": "Чего нельзя делать в полнолуние",
+    "file": "/data/pamphlets/nelzya-polnolunie.pdf",
+    "description": "Список работ, которые лучше перенести"
+  }
+]

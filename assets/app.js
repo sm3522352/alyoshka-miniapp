@@ -25,17 +25,14 @@ const Toast = {
 };
 
 const state = {
-  activeTab: 'home',
-  today: new Date().toISOString().slice(0, 10),
-  region: localStorage.getItem('region') || 'RU-MOW',
-  climate: localStorage.getItem('climate') || 'temperate',
-  cultures: JSON.parse(localStorage.getItem('cultures') || '[]'),
-  home: null,
-  garden: [],
-  important: [],
-  lunarMonth: null,
-  calendarData: null,
-  demo: false,
+  calendarCategory: 'phenology',
+  feedArticles: [],
+  feedUpdatedAt: null,
+  feedFilter: 'all',
+  pamphlets: [],
+  clubs: [],
+  clubPosts: {},
+  activeClub: null
 };
 
 const speak = (text) => {
@@ -226,75 +223,7 @@ function hideSkeleton(skeletonSelector, contentEl) {
   contentEl?.classList.remove('hidden');
 }
 
-function renderGarden() {
-  const list = $('#garden-list');
-  if (!list) return;
-  if (!state.garden.length) {
-    list.innerHTML = '<p class="text-center text-slate-500">Нет советов для отображения.</p>';
-    return;
-  }
-
-  const fragment = document.createDocumentFragment();
-  state.garden.forEach((tip) => {
-    const item = document.createElement('button');
-    item.type = 'button';
-    item.className = 'card text-left transition-all garden-card';
-    item.setAttribute('data-culture', tip.culture || 'сад');
-    const diff = tip.difficulty || 'easy';
-    const diffLabel = diff === 'hard' ? 'Опыт' : diff === 'medium' ? 'Вдумчиво' : 'Легко';
-    const diffClass = diff === 'hard' ? 'badge badge--bad' : diff === 'medium' ? 'badge badge--info' : 'badge badge--good';
-
-    item.innerHTML = `
-      <div class="flex items-center justify-between gap-3 mb-3">
-        <div class="flex items-center gap-3">
-          <div class="icon-chip">
-            <img src="/assets/icons/plant.svg" alt="${tip.culture || 'Культура'}" class="w-6 h-6" />
-          </div>
-          <div>
-            <p class="font-semibold text-lg">${tip.title}</p>
-            <p class="text-sm text-slate-500">${tip.culture || 'сад'}</p>
-          </div>
-        </div>
-        <span class="${diffClass}">${diffLabel}</span>
-      </div>
-      <p class="text-sm text-slate-600">${(tip.steps || []).slice(0, 2).join('. ')}</p>
-    `;
-    fragment.appendChild(item);
-  });
-  list.innerHTML = '';
-  list.appendChild(fragment);
-}
-
-function renderImportant() {
-  const list = $('#important-list');
-  if (!list) return;
-  if (!state.important.length) {
-    list.innerHTML = '<p class="text-center text-slate-500">Пока нет важных дел.</p>';
-    return;
-  }
-
-  const fragment = document.createDocumentFragment();
-  state.important.forEach((item, index) => {
-    const card = document.createElement('article');
-    card.className = 'card space-y-3';
-    card.innerHTML = `
-      <div class="flex items-center gap-3">
-        <div class="icon-chip">
-          <img src="/assets/icons/important.svg" alt="${item.topic || 'важно'}" class="w-6 h-6" />
-        </div>
-        <div>
-          <p class="font-semibold text-lg">${item.title}</p>
-          <p class="text-sm text-slate-500">${item.topic || 'важно'}</p>
-        </div>
-      </div>
-      <p>${item.summary || ''}</p>
-      ${renderCTA(item.cta || (index % 3 === 0 ? { type: 'done' } : null))}
-    `;
-    fragment.appendChild(card);
-  });
-  list.innerHTML = '';
-  list.appendChild(fragment);
-}
+// ...existing code...
 
 function getDayCategory(day, meta = {}) {
   if (!meta) return null;
@@ -492,46 +421,7 @@ function closeDaySheet() {
   }, 250);
 }
 
-function renderPlantingList(planting) {
-  const list = $('#planting-list');
-  const skeleton = $('#planting-skeleton');
-  if (!list) return;
-
-  const items = [
-    ...((planting?.vegetables || []).map((item) => ({ ...item, category: 'Овощи' }))),
-    ...((planting?.flowers || []).map((item) => ({ ...item, category: 'Цветы' }))),
-  ];
-
-  if (!items.length) {
-    skeleton?.classList.add('hidden');
-    list.classList.remove('hidden');
-    list.innerHTML = '<p class="text-sm text-slate-500">Нет данных о посевах на декабрь.</p>';
-    return;
-  }
-
-  const fragment = document.createDocumentFragment();
-  items.forEach((item) => {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'w-full text-left bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 flex flex-col gap-2 transition hover:border-emerald-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-400';
-    const datesLabel = (item.dates || []).map((date) => String(date)).join(', ');
-    button.setAttribute('data-planting', item.name);
-    button.setAttribute('data-dates', datesLabel);
-    button.innerHTML = `
-      <p class="text-xs uppercase tracking-wide text-emerald-600">${item.category}</p>
-      <p class="font-semibold leading-snug">${item.name}</p>
-      <div class="flex flex-wrap gap-2">
-        ${(item.dates || []).map((date) => `<span class="badge-good">${String(date).padStart(2, '0')}</span>`).join('')}
-      </div>
-    `;
-    fragment.appendChild(button);
-  });
-
-  list.innerHTML = '';
-  list.appendChild(fragment);
-  skeleton?.classList.add('hidden');
-  list.classList.remove('hidden');
-}
+// ...existing code...
 
 function setActiveTab(tab) {
   if (state.activeTab === tab) return;

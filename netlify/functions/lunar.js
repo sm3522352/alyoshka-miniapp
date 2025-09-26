@@ -16,9 +16,22 @@ exports.handler = async (event) => {
     guides = JSON.parse(fs.readFileSync(guidesFile, 'utf-8'));
   }
 
+  const calendarFile = path.join(__dirname, '..', '..', 'data', `calendar_${month}.json`);
+  let calendar = null;
+  if (fs.existsSync(calendarFile)) {
+    calendar = JSON.parse(fs.readFileSync(calendarFile, 'utf-8'));
+  }
   return {
     statusCode: 200,
     headers: { 'Content-Type': 'application/json; charset=utf-8' },
-    body: JSON.stringify({ ...lunar, guides })
+    body: JSON.stringify({
+      ...lunar,
+      guides,
+      calendar,
+      phenology: calendar?.phenology || [],
+      pruning: calendar?.pruning || [],
+      fertilizing: calendar?.fertilizing || { mineral: [], organic: [] },
+      seedlings: calendar?.seedlings || [],
+    })
   };
 };

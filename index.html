@@ -77,35 +77,100 @@
         </div>
       </section>
 
-      <section data-screen="garden" class="screen hidden" aria-labelledby="garden-heading">
-        <h2 id="garden-heading" class="screen-title">Огород</h2>
-        <div id="garden-list" class="space-y-4" aria-live="polite">
-          <div class="card">
-            <div class="card__body">
-              <div class="skeleton h-20"></div>
+      <section data-screen="feed" class="screen hidden" aria-labelledby="feed-heading">
+        <h2 id="feed-heading" class="screen-title">Лента</h2>
+        <div class="card">
+          <div class="card__body gap-4">
+            <div class="flex flex-wrap gap-2" role="tablist" aria-label="Фильтры ленты">
+              <button type="button" class="chip chip--active" data-feed-filter="all" role="tab" aria-selected="true">Все</button>
+              <button type="button" class="chip" data-feed-filter="Огород" role="tab" aria-selected="false">Огород</button>
+              <button type="button" class="chip" data-feed-filter="Цветы" role="tab" aria-selected="false">Цветы</button>
+              <button type="button" class="chip" data-feed-filter="Заготовки" role="tab" aria-selected="false">Заготовки</button>
+              <button type="button" class="chip" data-feed-filter="Вредители" role="tab" aria-selected="false">Вредители</button>
+            </div>
+            <div id="feed-list" class="space-y-4" aria-live="polite">
+              <div class="card">
+                <div class="card__body">
+                  <div class="skeleton h-24"></div>
+                </div>
+              </div>
             </div>
           </div>
+        </div>
+      </section>
+      <section data-screen="clubs" class="screen hidden" aria-labelledby="clubs-heading">
+        <h2 id="clubs-heading" class="screen-title">Кружки</h2>
+        <article class="card" aria-labelledby="club-create-title">
+          <header class="card__header">
+            <div class="card__title-group">
+              <div class="icon-chip">
+                <img src="/assets/icons/garden.svg" alt="Создать кружок" class="w-6 h-6" />
+              </div>
+              <h3 id="club-create-title" class="card__title">Создать кружок</h3>
+            </div>
+          </header>
+          <form id="club-create-form" class="card__body space-y-3">
+            <label class="form-field">
+              <span class="form-label">Название</span>
+              <input type="text" name="name" class="input" required placeholder="Например, Томаты на подоконнике" />
+            </label>
+            <label class="form-field">
+              <span class="form-label">Описание</span>
+              <textarea name="description" class="input" rows="3" placeholder="Для чего собираемся"></textarea>
+            </label>
+            <label class="form-field">
+              <span class="form-label">Ссылка на обложку (опционально)</span>
+              <input type="url" name="cover" class="input" placeholder="https://" />
+            </label>
+            <button type="submit" class="btn">Создать</button>
+          </form>
+        </article>
+
+        <div class="space-y-4" id="club-list" aria-live="polite">
           <div class="card">
             <div class="card__body">
               <div class="skeleton h-20"></div>
             </div>
           </div>
         </div>
-        <article class="card mt-4" id="planting-card">
+
+        <section class="card" id="club-detail" aria-live="polite" hidden>
+          <header class="card__header">
+            <div>
+              <h3 class="card__title" id="club-detail-title"></h3>
+              <p class="text-sm text-slate-500" id="club-detail-sub"></p>
+            </div>
+            <button type="button" class="btn-ghost" id="club-detail-close" aria-label="Закрыть кружок">✕</button>
+          </header>
+          <div class="card__body space-y-4">
+            <form id="club-post-form" class="space-y-3">
+              <label class="form-field">
+                <span class="form-label">Новое сообщение</span>
+                <textarea name="text" rows="3" class="input" required placeholder="Поделитесь новостями"></textarea>
+              </label>
+              <label class="form-field">
+                <span class="form-label">Фото (URL, по желанию)</span>
+                <input type="url" name="imageUrl" class="input" placeholder="https://" />
+              </label>
+              <button type="submit" class="btn-secondary w-full">Опубликовать</button>
+            </form>
+            <div id="club-posts" class="space-y-3"></div>
+          </div>
+        </section>
+      </section>
+        <article class="card mt-6" aria-labelledby="pamphlets-heading">
           <header class="card__header">
             <div class="card__title-group">
               <div class="icon-chip">
-                <img src="/assets/icons/calendar.svg" alt="Посевы декабря" class="w-6 h-6" />
+                <img src="/assets/icons/important.svg" alt="Памятки" class="w-6 h-6" />
               </div>
-              <h3 class="card__title">Посевы декабря</h3>
+              <h3 id="pamphlets-heading" class="card__title">Памятки</h3>
             </div>
           </header>
-          <div class="card__body">
-            <div class="skeleton h-16" id="planting-skeleton"></div>
-            <div id="planting-list" class="space-y-3 hidden"></div>
+          <div class="card__body" id="pamphlet-list">
+            <div class="skeleton h-24"></div>
           </div>
         </article>
-      </section>
 
       <section data-screen="calendar" class="screen hidden" aria-labelledby="calendar-heading">
         <h2 id="calendar-heading" class="screen-title">Календарь</h2>
@@ -223,23 +288,23 @@
   </div>
 
   <nav class="tabbar" aria-label="Основная навигация">
-    <button class="tabbar__item tabbar__item--active" data-tab="home">
+    <button class="active" data-tab="home">
       <img src="/assets/icons/home.svg" alt="Дом" />
       <span>Дом</span>
     </button>
-    <button class="tabbar__item" data-tab="garden">
-      <img src="/assets/icons/garden.svg" alt="Огород" />
-      <span>Огород</span>
-    </button>
-    <button class="tabbar__item" data-tab="calendar">
+    <button data-tab="calendar">
       <img src="/assets/icons/calendar.svg" alt="Календарь" />
       <span>Календарь</span>
     </button>
-    <button class="tabbar__item" data-tab="important">
-      <img src="/assets/icons/important.svg" alt="Важно" />
-      <span>Важно</span>
+    <button data-tab="feed">
+      <img src="/assets/icons/plant.svg" alt="Лента" />
+      <span>Лента</span>
     </button>
-    <button class="tabbar__item" data-tab="profile">
+    <button data-tab="clubs">
+      <img src="/assets/icons/garden.svg" alt="Кружки" />
+      <span>Кружки</span>
+    </button>
+    <button data-tab="profile">
       <img src="/assets/icons/user.svg" alt="Профиль" />
       <span>Профиль</span>
     </button>

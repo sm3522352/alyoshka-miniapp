@@ -1,0 +1,42 @@
+{
+  "clubs": [
+    {
+      "id": "club-teplye-gryadki",
+      "name": "Тёплые грядки",
+      "description": "Обсуждаем зимнее мульчирование и подготовку теплицы",
+      "owner_id": "demo-user",
+      "members": ["demo-user", "babushka-1"],
+      "cover": "https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=600&q=80"
+    },
+    {
+      "id": "club-fialki",
+      "name": "Фиалки на окне",
+      "description": "Уход за сенполиями и подсветка зимой",
+      "owner_id": "babushka-1",
+      "members": ["demo-user"],
+      "cover": "https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=600&q=80"
+    }
+  ],
+  "posts": {
+    "club-teplye-gryadki": [
+      {
+        "id": "post-1",
+        "author": "demo-user",
+        "text": "Поставила новые дуги из поликарбоната — стало теплее.",
+        "imageUrl": "https://images.unsplash.com/photo-1461354464878-ad92f492a5a0?auto=format&fit=crop&w=800&q=80",
+        "reactions": {"heart": 4, "like": 6, "sprout": 3},
+        "created_at": "2025-12-01T08:30:00+03:00"
+      }
+    ],
+    "club-fialki": [
+      {
+        "id": "post-2",
+        "author": "babushka-1",
+        "text": "Поделитесь, кто чем досвечивает? Я поставила две лампы на 12 часов.",
+        "imageUrl": "https://images.unsplash.com/photo-1444628838545-5c4a7d999ab0?auto=format&fit=crop&w=800&q=80",
+        "reactions": {"heart": 2, "like": 5, "sprout": 1},
+        "created_at": "2025-12-03T12:00:00+03:00"
+      }
+    ]
+  }
+}

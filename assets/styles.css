@@ -1,94 +1,31 @@
 :root {
-  --bg: #F3FAF6;
-  --text: #0F172A;
-  --accent: #0EA5A4;
-  --accent-dark: #0C8D8C;
-  --card: #FFFFFF;
-  --card-border: #D1FAE5;
-  --ok: #10B981;
-  --err: #DC2626;
-  --info: #0284C7;
-  --font-base: 18px;
-  --line-base: 26px;
-  --font-h1: 26px;
-  --line-h1: 32px;
-  --font-h2: 20px;
-  --line-h2: 28px;
-  --radius-card: 24px;
-  --radius-btn: 16px;
-  --shadow-accent: 0 6px 24px rgba(16, 185, 129, 0.12);
-}
-
-body.app-body {
-  min-height: 100vh;
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'Inter', 'System UI', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  font-size: var(--font-base);
-  line-height: var(--line-base);
-  transition: background 0.2s ease, color 0.2s ease, font-size 0.2s ease;
-}
-
-body.big-text {
-  --font-base: 21.6px;
-  --line-base: 31px;
-  --font-h1: 31.2px;
-  --line-h1: 38.4px;
-  --font-h2: 24px;
-  --line-h2: 33.6px;
-}
-
-body.high-contrast {
-  --text: #0B1324;
-  --accent: #0C8D8C;
-  --accent-dark: #0A7473;
-  --card-border: #34D399;
-  --shadow-accent: 0 8px 28px rgba(14, 165, 164, 0.2);
-}
-
-.app-shell {
-  margin: 0 auto;
-  max-width: 420px;
-  padding: 24px 16px 120px;
-}
-
-.app-header {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-.app-title {
-  font-size: var(--font-h1);
-  line-height: var(--line-h1);
-  font-weight: 700;
-}
-
-.app-subtitle {
-  font-size: 16px;
-  line-height: 22px;
-  color: rgba(15, 23, 42, 0.7);
-}
-
-.app-main {
-  display: block;
-  padding-bottom: 24px;
-}
-
-.screen {
-  display: block;
-}
-
-.screen.hidden {
-  display: none;
-}
-
-.screen-title {
-  font-size: var(--font-h1);
-  line-height: var(--line-h1);
+  outline-offset: 2px;
+.badge-best {
   font-weight: 600;
-  margin-bottom: 16px;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.chip--active,
+.chip:hover,
+.chip:focus-visible {
+  background: rgba(16, 185, 129, 0.18);
+  color: #047857;
+}
+.calendar-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.calendar-hint {
+  background: #F8FAFC;
+  border-radius: 16px;
+  padding: 16px;
+  font-size: 16px;
+  line-height: 1.5;
+  color: #1F2937;
+}
+.calendar-cell.active {
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.4);
 }
 
 .card {
@@ -483,24 +420,84 @@ a.btn-secondary {
   transform: translateX(20px);
 }
 
-.tabbar {
-  position: fixed;
-  left: 50%;
-  bottom: 16px;
-  transform: translateX(-50%);
-  width: calc(100% - 32px);
-  max-width: 420px;
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 8px;
-  padding: 12px 18px;
-  background: rgba(255, 255, 255, 0.96);
-  border-radius: 32px;
-  box-shadow: 0 12px 40px rgba(14, 165, 129, 0.18);
-  z-index: 40;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-around;
+  background: #ffffff;
+  border-top: 1px solid #E2E8F0;
+  padding: 8px 0;
+  z-index: 50;
 }
 
-.tabbar__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 6px 4px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #475569;
+}
+
+.tabbar button img {
+  width: 28px;
+  height: 28px;
+}
+
+.tabbar button.active {
+  color: #047857;
+  font-weight: 600;
+}
+
+.tabbar button:focus-visible {
+  outline: 2px solid #047857;
+  outline-offset: 2px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: 999px;
+  background: #F1F5F9;
+  color: #475569;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.chip--active,
+.chip:hover,
+.chip:focus-visible {
+  background: rgba(16, 185, 129, 0.18);
+  color: #047857;
+}
+
+.calendar-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.calendar-hint {
+  background: #F8FAFC;
+  border-radius: 16px;
+  padding: 16px;
+  font-size: 16px;
+  line-height: 1.5;
+  color: #1F2937;
+}
+
+.calendar-cell.active {
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.4);
+}
   display: flex;
   flex-direction: column;
   align-items: center;
