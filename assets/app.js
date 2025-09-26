@@ -34,6 +34,7 @@ const state = {
   garden: [],
   important: [],
   lunarMonth: null,
+  calendarData: null,
   demo: false,
 };
 
@@ -94,6 +95,26 @@ const safeJsonFetch = async (url, fallback) => {
     return fallback;
   }
 };
+
+async function loadMonth(month) {
+  const url = `${API_BASE}/lunar?month=${month}`;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('Bad response');
+    return await res.json();
+  } catch (err) {
+    console.warn('Falling back to local month data', err);
+    const monthKey = month.replace('-', '_');
+    const [lunarFallback, guidesFallback] = await Promise.all([
+      safeJsonFetch(`/data/lunar_${monthKey}.json`, null),
+      safeJsonFetch(`/data/guides_${monthKey}.json`, null),
+    ]);
+    if (!lunarFallback) {
+      throw err;
+    }
+    return { ...lunarFallback, guides: guidesFallback };
+  }
+}
 
 async function getHomeFromApi(date, region) {
   const url = `${API_BASE}/home?date=${encodeURIComponent(date)}&region=${encodeURIComponent(region)}`;
@@ -275,66 +296,241 @@ function renderImportant() {
   list.appendChild(fragment);
 }
 
-function renderCalendar() {
+function getDayCategory(day, meta = {}) {
+  if (!meta) return null;
+  if (meta.most_favorable?.includes(day)) return 'best';
+  if (meta.favorable?.includes(day)) return 'good';
+  if (meta.neutral?.includes(day)) return 'neutral';
+  if (meta.most_unfavorable?.includes(day)) return 'bad';
+  return null;
+}
+
+function renderCalendarGrid(data) {
   const grid = $('#calendar-grid');
   const skeleton = $('#calendar-skeleton');
+  const legend = $('#calendar-legend');
   if (!grid) return;
-  const lunar = state.lunarMonth?.days || [];
 
-  if (!lunar.length) {
+  grid.innerHTML = '';
+
+  if (!data?.days?.length) {
     skeleton?.classList.add('hidden');
     grid.classList.remove('hidden');
-    grid.innerHTML = '<p class="col-span-7 text-center text-slate-500">Нет данных календаря.</p>';
+    legend?.classList.add('hidden');
+    grid.innerHTML = '<p class="col-span-7 text-center text-slate-500">Нет данных за декабрь 2025.</p>';
     return;
   }
 
-  const firstDate = new Date(state.today);
-  const year = firstDate.getFullYear();
-  const month = firstDate.getMonth();
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const startDay = (new Date(year, month, 1).getDay() + 6) % 7; // Monday-first
-
-  const map = new Map(lunar.map((day) => [day.date, day]));
-
-  const weekdays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
-  const fragment = document.createDocumentFragment();
-
-  weekdays.forEach((w) => {
-    const cell = document.createElement('div');
-    cell.className = 'text-center font-semibold text-slate-500';
-    cell.textContent = w;
-    fragment.appendChild(cell);
+  const totalDays = 31;
+  const meta = data.meta || {};
+  const badgeMap = {
+    best: 'badge-best',
+    good: 'badge-good',
+    neutral: 'badge-neutral',
+    bad: 'badge-bad',
+  };
+  const labelMap = {
+    best: 'Самые благоприятные',
+    good: 'Благоприятные',
+    neutral: 'Нейтральные',
+    bad: 'Самые неблагоприятные',
+  };
+  const dayLookup = new Map();
+  data.days.forEach((item) => {
+    const dayNum = Number(item.date.slice(-2));
+    dayLookup.set(dayNum, item);
   });
 
-  for (let i = 0; i < startDay; i += 1) {
-    const empty = document.createElement('div');
-    empty.className = 'calendar__day opacity-0 pointer-events-none';
-    fragment.appendChild(empty);
-  }
+  const fragment = document.createDocumentFragment();
 
-  for (let day = 1; day <= daysInMonth; day += 1) {
-    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    const lunarDay = map.get(dateStr);
-    const cell = document.createElement('div');
-    const good = lunarDay?.is_good_for?.length;
-    const bad = lunarDay?.is_bad_for?.length;
-    const classes = ['calendar__day'];
-    if (good && !bad) classes.push('calendar__day--good');
-    if (bad && !good) classes.push('calendar__day--bad');
-    cell.className = classes.join(' ');
+  for (let day = 1; day <= totalDays; day += 1) {
+    const cell = document.createElement('button');
+    cell.type = 'button';
+    cell.className = 'calendar-cell';
+    cell.setAttribute('data-day', String(day));
+    cell.dataset.label = labelMap[getDayCategory(day, meta)] || '';
+    const dayInfo = dayLookup.get(day);
+    const category = getDayCategory(day, meta);
+    const badgeClass = category ? badgeMap[category] : '';
+    const badgeLabel = category ? labelMap[category] : '';
+    const moonInfo = dayInfo?.moon_day ? `Лунный день ${dayInfo.moon_day}` : 'Нет данных';
+    const phaseInfo = dayInfo?.phase ? `Фаза: ${formatPhase(dayInfo.phase)}` : '';
     cell.innerHTML = `
-      <div class="text-lg font-semibold">${day}</div>
-      <div class="text-sm text-slate-500">${lunarDay ? `Луна: ${lunarDay.moon_day}` : '—'}</div>
-      ${good ? `<span class="badge badge--good">Можно: ${(lunarDay.is_good_for || []).slice(0, 2).join(', ')}</span>` : ''}
-      ${bad ? `<span class="badge badge--bad">Не стоит: ${(lunarDay.is_bad_for || []).slice(0, 2).join(', ')}</span>` : ''}
+      <div class="num">${day}</div>
+      <div class="text-xs text-slate-500">${moonInfo}</div>
+      ${phaseInfo ? `<div class="text-xs text-slate-400">${phaseInfo}</div>` : ''}
+      ${badgeClass ? `<span class="${badgeClass}">${badgeLabel}</span>` : ''}
     `;
     fragment.appendChild(cell);
   }
 
-  grid.innerHTML = '';
+  grid.dataset.month = data.month || '2025-12';
   grid.appendChild(fragment);
   skeleton?.classList.add('hidden');
   grid.classList.remove('hidden');
+  legend?.classList.remove('hidden');
+}
+
+function collectDayGuides(day, guides = {}) {
+  const planting = guides.planting || {};
+  const plantingItems = [];
+  const types = [
+    { key: 'vegetables', label: 'Овощи' },
+    { key: 'flowers', label: 'Цветы' },
+  ];
+  types.forEach(({ key, label }) => {
+    (planting[key] || []).forEach((item) => {
+      if (item.dates?.includes(day)) {
+        plantingItems.push(`${label}: ${item.name}`);
+      }
+    });
+  });
+
+  const works = (guides.works || [])
+    .filter((work) => work.dates?.includes(day))
+    .map((work) => work.name);
+
+  return { plantingItems, works };
+}
+
+function openDaySheet(day, data) {
+  const sheet = $('#day-sheet');
+  const overlay = $('#sheet-overlay');
+  if (!sheet || !overlay || !data) return;
+
+  const month = data.month || '2025-12';
+  const dayInfo = data.days?.find((item) => Number(item.date.slice(-2)) === day) || null;
+  const dateObj = new Date(`${month}-${String(day).padStart(2, '0')}`);
+  const title = Number.isNaN(dateObj.getTime())
+    ? `${day} декабря`
+    : dateObj.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+  $('#day-sheet-title').textContent = title;
+
+  const details = [];
+  if (dayInfo?.moon_day) details.push(`Лунный день ${dayInfo.moon_day}`);
+  if (dayInfo?.phase) details.push(`Фаза: ${formatPhase(dayInfo.phase)}`);
+  if (dayInfo?.zodiac) details.push(`Знак: ${dayInfo.zodiac}`);
+  $('#day-sheet-sub').textContent = details.join(' • ') || 'Нет данных о лунном дне';
+
+  const body = $('#day-sheet-body');
+  if (!body) return;
+  body.innerHTML = '';
+
+  const category = getDayCategory(day, data.meta || {});
+  const badgeMap = {
+    best: 'badge-best',
+    good: 'badge-good',
+    neutral: 'badge-neutral',
+    bad: 'badge-bad',
+  };
+  const labelMap = {
+    best: 'Самые благоприятные',
+    good: 'Благоприятные',
+    neutral: 'Нейтральные',
+    bad: 'Самые неблагоприятные',
+  };
+  if (category) {
+    const status = document.createElement('div');
+    status.innerHTML = `<span class="${badgeMap[category]}">${labelMap[category]}</span>`;
+    body.appendChild(status);
+  }
+
+  if (dayInfo?.notes) {
+    const note = document.createElement('div');
+    note.className = 'text-sm text-emerald-800 bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-3';
+    note.textContent = dayInfo.notes;
+    body.appendChild(note);
+  }
+
+  const { plantingItems, works } = collectDayGuides(day, data.guides || {});
+
+  if (plantingItems.length) {
+    const plantingBlock = document.createElement('div');
+    plantingBlock.innerHTML = `
+      <h4 class="font-semibold text-lg">Посевы</h4>
+      <ul class="list-disc pl-5 space-y-1">${plantingItems.map((item) => `<li>${item}</li>`).join('')}</ul>
+    `;
+    body.appendChild(plantingBlock);
+  }
+
+  if (works.length) {
+    const worksBlock = document.createElement('div');
+    worksBlock.innerHTML = `
+      <h4 class="font-semibold text-lg">Работы</h4>
+      <ul class="list-disc pl-5 space-y-1">${works.map((item) => `<li>${item}</li>`).join('')}</ul>
+    `;
+    body.appendChild(worksBlock);
+  }
+
+  if (!plantingItems.length && !works.length && !dayInfo?.notes) {
+    const empty = document.createElement('p');
+    empty.className = 'text-sm text-slate-500';
+    empty.textContent = 'Нет специальных рекомендаций на этот день.';
+    body.appendChild(empty);
+  }
+
+  sheet.dataset.day = String(day);
+  sheet.dataset.month = month;
+  sheet.classList.remove('hidden');
+  overlay.classList.remove('hidden');
+  requestAnimationFrame(() => {
+    overlay.classList.add('visible');
+    sheet.classList.add('active');
+  });
+  tg?.HapticFeedback?.impactOccurred?.('light');
+}
+
+function closeDaySheet() {
+  const sheet = $('#day-sheet');
+  const overlay = $('#sheet-overlay');
+  if (!sheet || !overlay) return;
+  sheet.classList.remove('active');
+  overlay.classList.remove('visible');
+  setTimeout(() => {
+    sheet.classList.add('hidden');
+    overlay.classList.add('hidden');
+  }, 250);
+}
+
+function renderPlantingList(planting) {
+  const list = $('#planting-list');
+  const skeleton = $('#planting-skeleton');
+  if (!list) return;
+
+  const items = [
+    ...((planting?.vegetables || []).map((item) => ({ ...item, category: 'Овощи' }))),
+    ...((planting?.flowers || []).map((item) => ({ ...item, category: 'Цветы' }))),
+  ];
+
+  if (!items.length) {
+    skeleton?.classList.add('hidden');
+    list.classList.remove('hidden');
+    list.innerHTML = '<p class="text-sm text-slate-500">Нет данных о посевах на декабрь.</p>';
+    return;
+  }
+
+  const fragment = document.createDocumentFragment();
+  items.forEach((item) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'w-full text-left bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 flex flex-col gap-2 transition hover:border-emerald-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-400';
+    const datesLabel = (item.dates || []).map((date) => String(date)).join(', ');
+    button.setAttribute('data-planting', item.name);
+    button.setAttribute('data-dates', datesLabel);
+    button.innerHTML = `
+      <p class="text-xs uppercase tracking-wide text-emerald-600">${item.category}</p>
+      <p class="font-semibold leading-snug">${item.name}</p>
+      <div class="flex flex-wrap gap-2">
+        ${(item.dates || []).map((date) => `<span class="badge-good">${String(date).padStart(2, '0')}</span>`).join('')}
+      </div>
+    `;
+    fragment.appendChild(button);
+  });
+
+  list.innerHTML = '';
+  list.appendChild(fragment);
+  skeleton?.classList.add('hidden');
+  list.classList.remove('hidden');
 }
 
 function setActiveTab(tab) {
@@ -456,10 +652,19 @@ async function loadData() {
   state.important = important;
   state.lunarMonth = lunar;
 
+  try {
+    state.calendarData = await loadMonth('2025-12');
+  } catch (err) {
+    console.warn('Не удалось загрузить календарь на декабрь 2025', err);
+    state.calendarData = null;
+    Toast.show('Нет данных календаря за декабрь 2025', 'info');
+  }
+
   renderHome();
   renderGarden();
   renderImportant();
-  renderCalendar();
+  renderCalendarGrid(state.calendarData);
+  renderPlantingList(state.calendarData?.guides?.planting || null);
 
   if (state.demo && !demoRequested) {
     Toast.show('Демо-режим: локальные данные', 'info');
@@ -488,10 +693,28 @@ function handleGlobalClicks(event) {
     return;
   }
 
+  const closeSheetBtn = event.target.closest('[data-close-sheet]');
+  if (closeSheetBtn) {
+    event.preventDefault();
+    closeDaySheet();
+    return;
+  }
+
   const doneButton = event.target.closest('[data-action="done"]');
   if (doneButton) {
     event.preventDefault();
     markDone();
+    return;
+  }
+
+  const plantingItem = event.target.closest('[data-planting]');
+  if (plantingItem) {
+    event.preventDefault();
+    const dates = plantingItem.getAttribute('data-dates');
+    if (dates) {
+      Toast.show(`Лучшие даты: ${dates}`, 'info');
+      tg?.HapticFeedback?.impactOccurred?.('light');
+    }
     return;
   }
 
@@ -518,6 +741,14 @@ function handleGardenCardClick(event) {
   openModal({ title: tip.title, steps: tip.steps });
 }
 
+function handleCalendarGridClick(event) {
+  const cell = event.target.closest('[data-day]');
+  if (!cell) return;
+  const day = Number(cell.getAttribute('data-day'));
+  if (!Number.isFinite(day) || !state.calendarData) return;
+  openDaySheet(day, state.calendarData);
+}
+
 function init() {
   tg?.expand();
   tg?.MainButton?.hide();
@@ -527,6 +758,7 @@ function init() {
 
   document.addEventListener('click', handleGlobalClicks);
   $('#garden-list')?.addEventListener('click', handleGardenCardClick);
+  $('#calendar-grid')?.addEventListener('click', handleCalendarGridClick);
   $('#fab-voice')?.addEventListener('click', speakHome);
   $('#btn-check-voice')?.addEventListener('click', () => speak('Проверка озвучки. Всё работает.'));
   $('#btn-demo')?.addEventListener('click', () => {
@@ -545,6 +777,7 @@ function init() {
 window.addEventListener('keydown', (event) => {
   if (event.key === 'Escape') {
     closeModal();
+    closeDaySheet();
   }
 });
 

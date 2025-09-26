@@ -1,0 +1,43 @@
+{
+  "month": "2025-12",
+  "meta": {
+    "most_favorable": [3, 4, 30],
+    "favorable": [5, 7, 11, 16, 17, 22, 23, 24, 25, 27, 31],
+    "neutral": [1, 2, 6, 8, 9, 10, 12, 13, 14, 15, 18, 20, 21, 26, 28, 29],
+    "most_unfavorable": [19],
+    "notes": "Цвета: тёмно-зелёный — самые благоприятные; зелёный — благоприятные; серый — нейтральные; красный — самые неблагоприятные."
+  },
+  "days": [
+    {"date":"2025-12-01","moon_day":11,"phase":"waxing","zodiac":"Овен"},
+    {"date":"2025-12-02","moon_day":12,"phase":"waxing","zodiac":"Овен"},
+    {"date":"2025-12-03","moon_day":13,"phase":"waxing","zodiac":"Телец"},
+    {"date":"2025-12-04","moon_day":14,"phase":"full","zodiac":"Телец","notes":"Полнолуние — не работать с растениями."},
+    {"date":"2025-12-05","moon_day":15,"phase":"full","zodiac":"Близнецы"},
+    {"date":"2025-12-06","moon_day":16,"phase":"full","zodiac":"Близнецы","notes":"Полнолуние — избегать посевов/пересадок."},
+    {"date":"2025-12-07","moon_day":17,"phase":"waning","zodiac":"Рак"},
+    {"date":"2025-12-08","moon_day":18,"phase":"waning","zodiac":"Рак"},
+    {"date":"2025-12-09","moon_day":19,"phase":"waning","zodiac":"Лев"},
+    {"date":"2025-12-10","moon_day":20,"phase":"waning","zodiac":"Лев"},
+    {"date":"2025-12-11","moon_day":21,"phase":"waning","zodiac":"Дева"},
+    {"date":"2025-12-12","moon_day":21,"phase":"waning","zodiac":"Дева"},
+    {"date":"2025-12-13","moon_day":22,"phase":"waning","zodiac":"Весы"},
+    {"date":"2025-12-14","moon_day":23,"phase":"waning","zodiac":"Весы"},
+    {"date":"2025-12-15","moon_day":24,"phase":"waning","zodiac":"Весы"},
+    {"date":"2025-12-16","moon_day":25,"phase":"waning","zodiac":"Скорпион"},
+    {"date":"2025-12-17","moon_day":26,"phase":"waning","zodiac":"Скорпион"},
+    {"date":"2025-12-18","moon_day":27,"phase":"new","zodiac":"Стрелец","notes":"Новолуние — не работать с растениями."},
+    {"date":"2025-12-19","moon_day":28,"phase":"new","zodiac":"Стрелец","notes":"Новолуние — неблагоприятный день."},
+    {"date":"2025-12-20","moon_day":1,"phase":"new","zodiac":"Стрелец"},
+    {"date":"2025-12-21","moon_day":2,"phase":"new","zodiac":"Козерог"},
+    {"date":"2025-12-22","moon_day":3,"phase":"waxing","zodiac":"Козерог"},
+    {"date":"2025-12-23","moon_day":4,"phase":"waxing","zodiac":"Водолей"},
+    {"date":"2025-12-24","moon_day":5,"phase":"waxing","zodiac":"Водолей"},
+    {"date":"2025-12-25","moon_day":6,"phase":"waxing","zodiac":"Водолей"},
+    {"date":"2025-12-26","moon_day":7,"phase":"waxing","zodiac":"Рыбы"},
+    {"date":"2025-12-27","moon_day":8,"phase":"waxing","zodiac":"Рыбы"},
+    {"date":"2025-12-28","moon_day":9,"phase":"waxing","zodiac":"Овен"},
+    {"date":"2025-12-29","moon_day":10,"phase":"waxing","zodiac":"Овен"},
+    {"date":"2025-12-30","moon_day":11,"phase":"waxing","zodiac":"Телец"},
+    {"date":"2025-12-31","moon_day":12,"phase":"waxing","zodiac":"Телец"}
+  ]
+}
