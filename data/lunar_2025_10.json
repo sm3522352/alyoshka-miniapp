@@ -2,6 +2,14 @@
   "month": "2025-10",
   "days": [
     {"date":"2025-10-01","moon_day":8,"phase":"waxing","is_good_for":["листовые","огурцы"],"is_bad_for":["картофель"],"notes":"Хороший день для пересадки листовых."},
-    {"date":"2025-10-02","moon_day":9,"phase":"waxing","is_good_for":["цветы"],"is_bad_for":["корнеплоды"],"notes":"Подкормки — в умеренных дозах."}
+    {"date":"2025-10-02","moon_day":9,"phase":"waxing","is_good_for":["цветы"],"is_bad_for":["корнеплоды"],"notes":"Подкормки — в умеренных дозах."},
+    {"date":"2025-10-03","moon_day":10,"phase":"waxing","is_good_for":["томаты"],"is_bad_for":["лук"],"notes":"Полив вечером, не заливайте."},
+    {"date":"2025-10-04","moon_day":11,"phase":"waxing","is_good_for":["клубника"],"is_bad_for":[],"notes":"Мульча удержит влагу."},
+    {"date":"2025-10-05","moon_day":12,"phase":"waxing","is_good_for":["смородина"],"is_bad_for":["чеснок"],"notes":"Лёгкое рыхление грядок."},
+    {"date":"2025-10-06","moon_day":13,"phase":"waxing","is_good_for":["зелень"],"is_bad_for":["картофель"],"notes":"Хорошо сеять укроп и салаты."},
+    {"date":"2025-10-07","moon_day":14,"phase":"full","is_good_for":["огурцы"],"is_bad_for":["пересадка корней"],"notes":"Нейтральный день. Работайте без фанатизма."},
+    {"date":"2025-10-08","moon_day":15,"phase":"waning","is_good_for":["лук","чеснок"],"is_bad_for":["томаты"],"notes":"Посадки корнеплодов идут лучше."},
+    {"date":"2025-10-09","moon_day":16,"phase":"waning","is_good_for":["картофель"],"is_bad_for":["цветы"],"notes":"Соберите ботву и сорняки."},
+    {"date":"2025-10-10","moon_day":17,"phase":"waning","is_good_for":["чеснок"],"is_bad_for":[],"notes":"Проверьте укрытие от холода."}
   ]
 }
