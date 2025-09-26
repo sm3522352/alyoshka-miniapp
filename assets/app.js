@@ -4,17 +4,59 @@ const API_BASE = '/api';
 const $ = (selector, ctx = document) => ctx.querySelector(selector);
 const $$ = (selector, ctx = document) => Array.from(ctx.querySelectorAll(selector));
 
+function showView(id) {
+  const target = document.getElementById(id);
+  if (!target) return;
+  document.querySelectorAll('.view').forEach((view) => view.classList.remove('active'));
+  target.classList.add('active');
+  const pages = document.getElementById('pages');
+  if (pages) {
+    if (typeof pages.scrollTo === 'function') {
+      try {
+        pages.scrollTo({ top: 0, behavior: 'instant' });
+      } catch (err) {
+        pages.scrollTo({ top: 0, behavior: 'auto' });
+      }
+    } else {
+      pages.scrollTop = 0;
+    }
+  }
+}
+
 const Toast = {
   el: document.getElementById('toast'),
   show(message, ok = true) {
     if (!this.el) return;
     this.el.textContent = message;
-    this.el.style.background = ok ? 'var(--primary)' : 'var(--danger)';
+    this.el.style.background = ok ? 'var(--primary)' : 'var(--err)';
     this.el.classList.add('show');
     clearTimeout(this.t);
     this.t = setTimeout(() => this.el.classList.remove('show'), 2200);
   },
 };
+
+function fallbackHomeData() {
+  return {
+    lunar: {
+      moon_day: '—',
+      phase: '—',
+      is_good_for: [],
+      is_bad_for: [],
+      notes: 'Нет данных о лунном дне, действуйте по самочувствию.',
+    },
+    garden: {
+      title: 'Осмотр растений',
+      steps: ['Проверьте листья и почву', 'Полейте при необходимости'],
+      culture: 'сад',
+      tag: 'сад',
+    },
+    important: {
+      title: 'Сделайте короткую зарядку',
+      summary: 'Потянитесь и сделайте несколько лёгких упражнений.',
+      cta: { type: 'done' },
+    },
+  };
+}
 
 const monthsRu = [
   'Январь',
@@ -147,6 +189,48 @@ async function getHomeFromLocal(date) {
   };
 
   return { lunar: day, garden: tip, important: imp };
+}
+
+async function loadHome() {
+  $('#card-lunar-content')?.classList.add('hidden');
+  $('#card-garden-content')?.classList.add('hidden');
+  $('#card-important-content')?.classList.add('hidden');
+
+  const demoRequested = state.demo;
+  let data = null;
+  let usedLocal = false;
+
+  try {
+    data = demoRequested ? await getHomeFromLocal(state.today) : await getHomeFromApi(state.today, state.region);
+  } catch (err) {
+    console.warn('Home API failed, try local', err);
+  }
+
+  if ((!data || !data.lunar) && !demoRequested) {
+    try {
+      const localData = await getHomeFromLocal(state.today);
+      if (localData?.lunar) {
+        data = localData;
+        usedLocal = true;
+      }
+    } catch (err) {
+      console.warn('Local home data unavailable', err);
+    }
+  } else if (demoRequested && data?.lunar) {
+    usedLocal = true;
+  }
+
+  if (!data || !data.lunar) {
+    data = fallbackHomeData();
+    usedLocal = false;
+    Toast.show('Показаны офлайн-данные');
+  } else if (usedLocal && !demoRequested) {
+    state.demo = true;
+    Toast.show('Демо-режим: локальные данные', true);
+  }
+
+  state.home = data;
+  renderHome();
 }
 
 function formatPhase(phase) {
@@ -796,19 +880,18 @@ function renderPlantingList(planting, monthIso = state.currentMonth) {
 
 
 function setActiveTab(tab) {
-  if (state.activeTab === tab) return;
+  const viewId = `view-${tab}`;
+  if (!document.getElementById(viewId)) return;
+  showView(viewId);
   state.activeTab = tab;
   $$('[data-tab]').forEach((btn) => {
     const isActive = btn.dataset.tab === tab;
     btn.classList.toggle('active', isActive);
-    btn.setAttribute('aria-current', isActive ? 'page' : 'false');
-  });
-  $$('[data-screen]').forEach((screen) => {
-    screen.classList.toggle('hidden', screen.dataset.screen !== tab);
+    btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
   });
   const fab = $('#fab-voice');
   fab?.classList.toggle('hidden', tab !== 'home');
-  $('#page')?.focus();
+  $('#pages')?.focus();
   if (tab !== 'home') {
     window.speechSynthesis?.cancel?.();
   }
@@ -895,21 +978,7 @@ function bindProfile() {
 }
 
 async function loadData() {
-  $('#card-lunar-content')?.classList.add('hidden');
-  $('#card-garden-content')?.classList.add('hidden');
-  $('#card-important-content')?.classList.add('hidden');
-
-  const demoRequested = state.demo;
-
-  try {
-    const home = demoRequested ? await getHomeFromLocal(state.today) : await getHomeFromApi(state.today, state.region);
-    state.home = home;
-  } catch (err) {
-    console.warn('Falling back to demo home data', err);
-    state.demo = true;
-    state.home = await getHomeFromLocal(state.today);
-    Toast.show('Демо-режим: локальные данные', true);
-  }
+  await loadHome();
 
   const monthKey = state.today.slice(0, 7).replace('-', '_');
   const [garden, important, lunar] = await Promise.all([
@@ -921,13 +990,8 @@ async function loadData() {
   state.important = important;
   state.lunarMonth = lunar;
 
-  renderHome();
   renderGarden();
   renderImportant();
-
-  if (state.demo && !demoRequested) {
-    Toast.show('Демо-режим: локальные данные', true);
-  }
 }
 
 function handleGlobalClicks(event) {
