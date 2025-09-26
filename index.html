@@ -5,17 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Алёшка — бабушкин помощник</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/assets/styles.css" />
 </head>
-<body class="app-body">
-  <div id="app" class="app-shell">
+<body>
+  <div id="root" class="app-shell">
     <header class="app-header" aria-labelledby="app-title">
-      <div class="icon-chip icon-chip--accent" aria-hidden="true">
-        <img src="/assets/icons/sprout.svg" alt="" class="w-6 h-6" />
+      <div class="app-header__icon" aria-hidden="true">
+        <img src="/assets/icons/sprout.svg" alt="" />
       </div>
       <div>
         <h1 id="app-title" class="app-title">Алёшка</h1>
@@ -23,22 +22,22 @@
       </div>
     </header>
 
-    <main id="main" class="app-main" tabindex="-1">
-      <section data-screen="home" class="screen" aria-labelledby="home-heading">
+    <main id="page" class="page" tabindex="-1">
+      <section data-screen="home" class="view active" aria-labelledby="home-heading">
         <h2 id="home-heading" class="sr-only">Дом</h2>
-        <div class="space-y-4">
+        <div class="stack stack-lg">
           <article class="card" data-card="lunar">
             <header class="card__header">
               <div class="card__title-group">
                 <div class="icon-chip">
-                  <img src="/assets/icons/moon.svg" alt="Фаза луны" class="w-6 h-6" />
+                  <img src="/assets/icons/moon.svg" alt="Фаза луны" />
                 </div>
                 <h3 class="card__title">Лунный день</h3>
               </div>
-              <button class="btn-ghost a11y-focus" data-say="#card-lunar-content" aria-label="Озвучить карточку про луну">🔊</button>
+              <button class="btn-ghost" data-say="#card-lunar-content" aria-label="Озвучить карточку про луну">🔊</button>
             </header>
             <div class="card__body">
-              <div class="skeleton h-24" id="card-lunar-skeleton"></div>
+              <div class="skeleton skeleton-medium" id="card-lunar-skeleton"></div>
               <div id="card-lunar-content" class="card__content hidden" aria-live="polite"></div>
             </div>
           </article>
@@ -47,14 +46,14 @@
             <header class="card__header">
               <div class="card__title-group">
                 <div class="icon-chip">
-                  <img src="/assets/icons/plant.svg" alt="Совет по огороду" class="w-6 h-6" />
+                  <img src="/assets/icons/plant.svg" alt="Совет по огороду" />
                 </div>
                 <h3 class="card__title">Совет по огороду</h3>
               </div>
-              <button class="btn-ghost a11y-focus" data-say="#card-garden-content" aria-label="Озвучить карточку про огород">🔊</button>
+              <button class="btn-ghost" data-say="#card-garden-content" aria-label="Озвучить карточку про огород">🔊</button>
             </header>
             <div class="card__body">
-              <div class="skeleton h-28" id="card-garden-skeleton"></div>
+              <div class="skeleton skeleton-tall" id="card-garden-skeleton"></div>
               <div id="card-garden-content" class="card__content hidden" aria-live="polite"></div>
             </div>
           </article>
@@ -63,53 +62,54 @@
             <header class="card__header">
               <div class="card__title-group">
                 <div class="icon-chip">
-                  <img src="/assets/icons/shield.svg" alt="Важно" class="w-6 h-6" />
+                  <img src="/assets/icons/shield.svg" alt="Важно" />
                 </div>
                 <h3 class="card__title">Важно сегодня</h3>
               </div>
-              <button class="btn-ghost a11y-focus" data-say="#card-important-content" aria-label="Озвучить карточку важно">🔊</button>
+              <button class="btn-ghost" data-say="#card-important-content" aria-label="Озвучить карточку важно">🔊</button>
             </header>
             <div class="card__body">
-              <div class="skeleton h-24" id="card-important-skeleton"></div>
+              <div class="skeleton skeleton-medium" id="card-important-skeleton"></div>
               <div id="card-important-content" class="card__content hidden" aria-live="polite"></div>
             </div>
           </article>
         </div>
       </section>
 
-      <section data-screen="feed" class="screen hidden" aria-labelledby="feed-heading">
-        <h2 id="feed-heading" class="screen-title">Лента</h2>
-        <div class="card">
-          <div class="card__body gap-4">
-            <div class="flex flex-wrap gap-2" role="tablist" aria-label="Фильтры ленты">
-              <button type="button" class="chip chip--active" data-feed-filter="all" role="tab" aria-selected="true">Все</button>
+      <section data-screen="feed" class="view hidden" aria-labelledby="feed-heading">
+        <h2 id="feed-heading" class="section-title">Лента</h2>
+        <article class="card">
+          <div class="card__body stack">
+            <div class="chips" role="tablist" aria-label="Фильтры ленты">
+              <button type="button" class="chip active" data-feed-filter="all" role="tab" aria-selected="true">Все</button>
               <button type="button" class="chip" data-feed-filter="Огород" role="tab" aria-selected="false">Огород</button>
               <button type="button" class="chip" data-feed-filter="Цветы" role="tab" aria-selected="false">Цветы</button>
               <button type="button" class="chip" data-feed-filter="Заготовки" role="tab" aria-selected="false">Заготовки</button>
               <button type="button" class="chip" data-feed-filter="Вредители" role="tab" aria-selected="false">Вредители</button>
             </div>
-            <div id="feed-list" class="space-y-4" aria-live="polite">
+            <div id="feed-list" class="stack" aria-live="polite">
               <div class="card">
                 <div class="card__body">
-                  <div class="skeleton h-24"></div>
+                  <div class="skeleton skeleton-medium"></div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        </article>
       </section>
-      <section data-screen="clubs" class="screen hidden" aria-labelledby="clubs-heading">
-        <h2 id="clubs-heading" class="screen-title">Кружки</h2>
+
+      <section data-screen="clubs" class="view hidden" aria-labelledby="clubs-heading">
+        <h2 id="clubs-heading" class="section-title">Кружки</h2>
         <article class="card" aria-labelledby="club-create-title">
           <header class="card__header">
             <div class="card__title-group">
               <div class="icon-chip">
-                <img src="/assets/icons/garden.svg" alt="Создать кружок" class="w-6 h-6" />
+                <img src="/assets/icons/garden.svg" alt="Создать кружок" />
               </div>
               <h3 id="club-create-title" class="card__title">Создать кружок</h3>
             </div>
           </header>
-          <form id="club-create-form" class="card__body space-y-3">
+          <form id="club-create-form" class="card__body stack">
             <label class="form-field">
               <span class="form-label">Название</span>
               <input type="text" name="name" class="input" required placeholder="Например, Томаты на подоконнике" />
@@ -126,24 +126,24 @@
           </form>
         </article>
 
-        <div class="space-y-4" id="club-list" aria-live="polite">
+        <div class="stack" id="club-list" aria-live="polite">
           <div class="card">
             <div class="card__body">
-              <div class="skeleton h-20"></div>
+              <div class="skeleton skeleton-medium"></div>
             </div>
           </div>
         </div>
 
-        <section class="card" id="club-detail" aria-live="polite" hidden>
+        <section class="card hidden" id="club-detail" aria-live="polite">
           <header class="card__header">
             <div>
               <h3 class="card__title" id="club-detail-title"></h3>
-              <p class="text-sm text-slate-500" id="club-detail-sub"></p>
+              <p class="text-sm text-muted" id="club-detail-sub"></p>
             </div>
             <button type="button" class="btn-ghost" id="club-detail-close" aria-label="Закрыть кружок">✕</button>
           </header>
-          <div class="card__body space-y-4">
-            <form id="club-post-form" class="space-y-3">
+          <div class="card__body stack">
+            <form id="club-post-form" class="stack">
               <label class="form-field">
                 <span class="form-label">Новое сообщение</span>
                 <textarea name="text" rows="3" class="input" required placeholder="Поделитесь новостями"></textarea>
@@ -152,31 +152,30 @@
                 <span class="form-label">Фото (URL, по желанию)</span>
                 <input type="url" name="imageUrl" class="input" placeholder="https://" />
               </label>
-              <button type="submit" class="btn-secondary w-full">Опубликовать</button>
+              <button type="submit" class="btn-secondary">Опубликовать</button>
             </form>
-            <div id="club-posts" class="space-y-3"></div>
+            <div id="club-posts" class="stack"></div>
           </div>
         </section>
       </section>
-        <article class="card mt-6" aria-labelledby="pamphlets-heading">
-          <header class="card__header">
-            <div class="card__title-group">
-              <div class="icon-chip">
 
-                <img src="/assets/icons/calendar.svg" alt="Посевы месяца" class="w-6 h-6" />
-              </div>
-              <h3 class="card__title"><span id="planting-title">Посевы месяца</span></h3>
-
+      <article class="card" aria-labelledby="pamphlets-heading">
+        <header class="card__header">
+          <div class="card__title-group">
+            <div class="icon-chip">
+              <img src="/assets/icons/calendar.svg" alt="Посевы месяца" />
             </div>
-          </header>
-          <div class="card__body" id="pamphlet-list">
-            <div class="skeleton h-24"></div>
+            <h3 class="card__title"><span id="planting-title">Посевы месяца</span></h3>
           </div>
-        </article>
+        </header>
+        <div class="card__body" id="pamphlet-list">
+          <div class="skeleton skeleton-medium"></div>
+        </div>
+      </article>
 
-      <section data-screen="calendar" class="screen hidden" aria-labelledby="calendar-heading">
-        <h2 id="calendar-heading" class="screen-title">Календарь</h2>
-        <div class="card" id="calendar-card">
+      <section data-screen="calendar" class="view hidden" aria-labelledby="calendar-heading">
+        <h2 id="calendar-heading" class="section-title">Календарь</h2>
+        <article class="card" id="calendar-card">
           <header class="calendar-head" aria-live="polite">
             <div class="calendar-head__nav">
               <button type="button" class="calendar-head__btn" id="calendar-month-prev" aria-label="Предыдущий месяц">◀︎</button>
@@ -187,13 +186,13 @@
           </header>
           <div class="card__body">
             <div class="calendar-stage" id="calendar-stage">
-              <div class="skeleton h-40" id="calendar-skeleton"></div>
-              <div id="calendar-flip" class="calendar-flip hidden" aria-live="polite">
-                <div id="calendar-stack" class="calendar-flip__stack"></div>
-                <div class="calendar-flip__controls">
-                  <button type="button" class="calendar-flip__arrow" id="calendar-day-prev" aria-label="Предыдущий день">◀︎</button>
-                  <div id="calendar-day-label" class="calendar-flip__label">1 января</div>
-                  <button type="button" class="calendar-flip__arrow" id="calendar-day-next" aria-label="Следующий день">▶︎</button>
+              <div class="skeleton skeleton-tall" id="calendar-skeleton"></div>
+              <div id="calendar-flip" class="flip-wrap hidden" aria-live="polite">
+                <div id="calendar-stack" class="flip-stack"></div>
+                <div class="calendar-controls">
+                  <button type="button" class="calendar-arrow" id="calendar-day-prev" aria-label="Предыдущий день">◀︎</button>
+                  <div id="calendar-day-label" class="calendar-label">1 января</div>
+                  <button type="button" class="calendar-arrow" id="calendar-day-next" aria-label="Следующий день">▶︎</button>
                 </div>
               </div>
             </div>
@@ -204,39 +203,39 @@
               <span><span class="badge-bad">Опасно</span> — самые неблагоприятные</span>
             </div>
           </div>
-        </div>
+        </article>
       </section>
 
-      <section data-screen="important" class="screen hidden" aria-labelledby="important-heading">
-        <h2 id="important-heading" class="screen-title">Важно</h2>
-        <div id="important-list" class="space-y-4" aria-live="polite">
+      <section data-screen="important" class="view hidden" aria-labelledby="important-heading">
+        <h2 id="important-heading" class="section-title">Важно</h2>
+        <div id="important-list" class="stack" aria-live="polite">
           <div class="card">
             <div class="card__body">
-              <div class="skeleton h-20"></div>
+              <div class="skeleton skeleton-medium"></div>
             </div>
           </div>
         </div>
       </section>
 
-      <section data-screen="profile" class="screen hidden" aria-labelledby="profile-heading">
-        <h2 id="profile-heading" class="screen-title">Профиль</h2>
-        <form id="profile-form" class="space-y-6" novalidate>
+      <section data-screen="profile" class="view hidden" aria-labelledby="profile-heading">
+        <h2 id="profile-heading" class="section-title">Профиль</h2>
+        <form id="profile-form" class="stack" novalidate>
           <div class="card">
-            <div class="card__body space-y-4">
-              <div>
-                <label for="region" class="block text-sm font-medium text-slate-600">Регион</label>
-                <select id="region" name="region" class="input a11y-focus" aria-describedby="region-help">
+            <div class="card__body stack">
+              <div class="form-field">
+                <label for="region" class="form-label">Регион</label>
+                <select id="region" name="region" class="input" aria-describedby="region-help">
                   <option value="RU-MOW">Москва и область</option>
                   <option value="RU-SPE">Санкт-Петербург</option>
                   <option value="RU-KGD">Калининград</option>
                   <option value="RU-KHA">Хабаровский край</option>
                   <option value="RU-KDA">Краснодарский край</option>
                 </select>
-                <p id="region-help" class="text-xs text-slate-500">Нужен для погодных подсказок</p>
+                <p id="region-help" class="text-xs text-muted">Нужен для погодных подсказок</p>
               </div>
-              <div>
-                <label for="climate" class="block text-sm font-medium text-slate-600">Климатическая зона</label>
-                <select id="climate" name="climate" class="input a11y-focus">
+              <div class="form-field">
+                <label for="climate" class="form-label">Климатическая зона</label>
+                <select id="climate" name="climate" class="input">
                   <option value="temperate">Умеренная</option>
                   <option value="continental">Континентальная</option>
                   <option value="north">Северная</option>
@@ -244,31 +243,31 @@
                 </select>
               </div>
               <fieldset>
-                <legend class="block text-sm font-medium text-slate-600 mb-2">Любимые культуры</legend>
-                <div class="grid grid-cols-2 gap-3" id="favorite-cultures">
+                <legend class="form-label">Любимые культуры</legend>
+                <div class="stack">
                   <label class="checkbox">
                     <input type="checkbox" name="cultures" value="томаты" />
-                    <span>Томаты</span>
+                    <span class="text-wrap">Томаты</span>
                   </label>
                   <label class="checkbox">
                     <input type="checkbox" name="cultures" value="огурцы" />
-                    <span>Огурцы</span>
+                    <span class="text-wrap">Огурцы</span>
                   </label>
                   <label class="checkbox">
                     <input type="checkbox" name="cultures" value="клубника" />
-                    <span>Клубника</span>
+                    <span class="text-wrap">Клубника</span>
                   </label>
                   <label class="checkbox">
                     <input type="checkbox" name="cultures" value="картофель" />
-                    <span>Картофель</span>
+                    <span class="text-wrap">Картофель</span>
                   </label>
                   <label class="checkbox">
                     <input type="checkbox" name="cultures" value="лук" />
-                    <span>Лук</span>
+                    <span class="text-wrap">Лук</span>
                   </label>
                   <label class="checkbox">
                     <input type="checkbox" name="cultures" value="цветы" />
-                    <span>Цветы</span>
+                    <span class="text-wrap">Цветы</span>
                   </label>
                 </div>
               </fieldset>
@@ -276,7 +275,7 @@
           </div>
 
           <div class="card">
-            <div class="card__body space-y-4">
+            <div class="card__body stack">
               <div class="toggle">
                 <div>
                   <p class="toggle__title">Крупный шрифт</p>
@@ -297,54 +296,60 @@
                   <span class="slider"></span>
                 </label>
               </div>
-              <button type="button" id="btn-check-voice" class="btn w-full">Проверить озвучку</button>
-              <button type="button" id="btn-demo" class="btn-secondary w-full">Включить демо-режим</button>
+              <div class="toggle">
+                <div>
+                  <p class="toggle__title">Ночной режим</p>
+                  <p class="toggle__hint">Тёмная спокойная тема</p>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" id="pref-night" />
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <button type="button" id="btn-check-voice" class="btn">Проверить озвучку</button>
+              <button type="button" id="btn-demo" class="btn-secondary">Включить демо-режим</button>
             </div>
           </div>
         </form>
       </section>
     </main>
+
+    <nav id="tabbar" class="tabbar" aria-label="Основная навигация">
+      <button class="tab active" data-tab="home">
+        <img src="/assets/icons/home.svg" alt="Дом" />
+        <span>Дом</span>
+      </button>
+      <button class="tab" data-tab="calendar">
+        <img src="/assets/icons/calendar.svg" alt="Календарь" />
+        <span>Календарь</span>
+      </button>
+      <button class="tab" data-tab="feed">
+        <img src="/assets/icons/plant.svg" alt="Лента" />
+        <span>Лента</span>
+      </button>
+      <button class="tab" data-tab="clubs">
+        <img src="/assets/icons/garden.svg" alt="Кружки" />
+        <span>Кружки</span>
+      </button>
+      <button class="tab" data-tab="profile">
+        <img src="/assets/icons/user.svg" alt="Профиль" />
+        <span>Профиль</span>
+      </button>
+    </nav>
   </div>
 
-  <nav class="tabbar" aria-label="Основная навигация">
-    <button class="active" data-tab="home">
-      <img src="/assets/icons/home.svg" alt="Дом" />
-      <span>Дом</span>
-    </button>
-    <button data-tab="calendar">
-      <img src="/assets/icons/calendar.svg" alt="Календарь" />
-      <span>Календарь</span>
-    </button>
-    <button data-tab="feed">
-      <img src="/assets/icons/plant.svg" alt="Лента" />
-      <span>Лента</span>
-    </button>
-    <button data-tab="clubs">
-      <img src="/assets/icons/garden.svg" alt="Кружки" />
-      <span>Кружки</span>
-    </button>
-    <button data-tab="profile">
-      <img src="/assets/icons/user.svg" alt="Профиль" />
-      <span>Профиль</span>
-    </button>
-  </nav>
-
-  <button class="fab" id="fab-voice" aria-label="Озвучить экран">
-    🔊
-  </button>
+  <button class="fab" id="fab-voice" aria-label="Озвучить экран">🔊</button>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
   <div id="sheet-overlay" class="sheet-overlay hidden" data-close-sheet></div>
-  <div id="day-sheet" class="sheet hidden" role="dialog" aria-modal="true" aria-labelledby="day-sheet-title">
-    <div class="flex items-start justify-between gap-3">
-      <div>
-        <div id="day-sheet-title" class="sheet-title"></div>
-        <div id="day-sheet-sub" class="sheet-sub"></div>
-      </div>
-      <button type="button" class="btn-ghost" data-close-sheet aria-label="Закрыть панель">✕</button>
+  <div id="day-sheet" class="bottom-sheet hidden" role="dialog" aria-modal="true" aria-labelledby="day-sheet-title">
+    <div class="stack-sm">
+      <div class="sheet-title" id="day-sheet-title"></div>
+      <div class="sheet-sub" id="day-sheet-sub"></div>
     </div>
-    <div id="day-sheet-body" class="space-y-3 text-base"></div>
+    <div id="day-sheet-body" class="stack"></div>
+    <button type="button" class="btn-ghost" data-close-sheet aria-label="Закрыть панель">Закрыть</button>
   </div>
 
   <div id="modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
@@ -352,11 +357,11 @@
     <div class="modal__content" role="document">
       <div class="modal__header">
         <h3 id="modal-title" class="modal__title"></h3>
-        <button class="btn-ghost modal__close a11y-focus" type="button" data-close="modal" aria-label="Закрыть">✕</button>
+        <button class="btn-ghost modal__close" type="button" data-close="modal" aria-label="Закрыть">✕</button>
       </div>
       <div id="modal-body" class="modal__body"></div>
       <div class="modal__footer">
-        <button type="button" class="btn-secondary w-full" data-close="modal">Понятно</button>
+        <button type="button" class="btn-secondary" data-close="modal">Понятно</button>
       </div>
     </div>
   </div>

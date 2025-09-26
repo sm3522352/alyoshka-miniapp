@@ -5,22 +5,14 @@ const $ = (selector, ctx = document) => ctx.querySelector(selector);
 const $$ = (selector, ctx = document) => Array.from(ctx.querySelectorAll(selector));
 
 const Toast = {
-  el: $('#toast'),
-  timeout: null,
-  show(message, tone = 'success') {
+  el: document.getElementById('toast'),
+  show(message, ok = true) {
     if (!this.el) return;
-    const colors = {
-      success: getComputedStyle(document.body).getPropertyValue('--ok') || '#10B981',
-      error: getComputedStyle(document.body).getPropertyValue('--err') || '#DC2626',
-      info: getComputedStyle(document.body).getPropertyValue('--info') || '#0284C7',
-    };
     this.el.textContent = message;
-    this.el.style.background = colors[tone] || colors.success;
-    this.el.classList.add('toast--visible');
-    clearTimeout(this.timeout);
-    this.timeout = setTimeout(() => {
-      this.el.classList.remove('toast--visible');
-    }, 2600);
+    this.el.style.background = ok ? 'var(--primary)' : 'var(--danger)';
+    this.el.classList.add('show');
+    clearTimeout(this.t);
+    this.t = setTimeout(() => this.el.classList.remove('show'), 2200);
   },
 };
 
@@ -60,7 +52,7 @@ const state = {
 
 const speak = (text) => {
   if (!('speechSynthesis' in window)) {
-    Toast.show('Озвучка недоступна', 'error');
+    Toast.show('Озвучка недоступна', false);
     return;
   }
   if (!text?.trim()) return;
@@ -95,10 +87,11 @@ const speakHome = () => {
   speak(lines.join(' '));
 };
 
-const applyPrefs = () => {
+function applyPrefs() {
   document.body.classList.toggle('big-text', localStorage.getItem('bigText') === '1');
   document.body.classList.toggle('high-contrast', localStorage.getItem('hiContrast') === '1');
-};
+  document.body.classList.toggle('night', localStorage.getItem('night') === '1');
+}
 
 const isDemoMode = () => {
   const search = new URLSearchParams(location.search);
@@ -246,26 +239,24 @@ function renderHome() {
   const { lunar, garden, important } = state.home;
 
   containerLunar.innerHTML = `
-    <p class="font-semibold text-lg">${lunar.notes || 'Лунный день'}</p>
-    <p>День <span class="font-semibold">${lunar.moon_day || '—'}</span>, фаза: <span class="font-semibold">${formatPhase(lunar.phase)}</span></p>
-    <p>Хорошо: <span class="font-medium">${(lunar.is_good_for || []).join(', ') || '—'}</span></p>
-    <p>Не рекомендуется: <span class="font-medium">${(lunar.is_bad_for || []).join(', ') || '—'}</span></p>
+    <p class="text-lg text-strong text-wrap">${lunar.notes || 'Лунный день'}</p>
+    <p>День <span class="text-strong">${lunar.moon_day || '—'}</span>, фаза: <span class="text-strong text-wrap">${formatPhase(lunar.phase)}</span></p>
+    <p>Хорошо: <span class="text-strong text-wrap">${(lunar.is_good_for || []).join(', ') || '—'}</span></p>
+    <p>Не рекомендуется: <span class="text-strong text-wrap">${(lunar.is_bad_for || []).join(', ') || '—'}</span></p>
   `;
 
   const gardenSteps = garden?.steps || [];
   containerGarden.innerHTML = `
-    <p class="font-semibold text-lg">${garden?.title || 'Совет для огорода'}</p>
-    <div class="text-sm uppercase tracking-wide text-emerald-600">${garden?.culture || ''}</div>
-    <ul class="list-disc pl-5 space-y-1">
-      ${gardenSteps.map((step) => `<li>${step}</li>`).join('')}
-    </ul>
+    <p class="text-lg text-strong text-wrap">${garden?.title || 'Совет для огорода'}</p>
+    <div class="text-xs text-muted text-wrap">${garden?.culture || ''}</div>
+    ${gardenSteps.length ? `<ul class="list">${gardenSteps.map((step) => `<li class="text-wrap">${step}</li>`).join('')}</ul>` : ''}
     <button type="button" class="btn-secondary card__cta" data-open-garden="${garden?.culture || ''}">Посмотреть подробнее</button>
   `;
 
   const cta = renderCTA(important.cta);
   containerImportant.innerHTML = `
-    <p class="font-semibold text-lg">${important.title || 'Важно'}</p>
-    <p>${important.summary || ''}</p>
+    <p class="text-lg text-strong text-wrap">${important.title || 'Важно'}</p>
+    <p class="text-wrap">${important.summary || ''}</p>
     ${cta}
   `;
 
@@ -412,46 +403,48 @@ const FlipCalendar = (() => {
 
   function buildCard(day, idx) {
     const dayNumber = Number(day.date.slice(-2));
-    const moonText = day.moon_day ? `Лунный день ${day.moon_day}` : 'Лунный день —';
-    const phaseText = `Фаза: ${formatPhase(day.phase)}`;
-    const zodiacText = day.zodiac ? `<div>Знак: ${day.zodiac}</div>` : '';
     const badge = getBadge(dayNumber, day);
     const tags = [];
-    if (badge) tags.push(`<span class="flip-card__badge ${badge.className}">${badge.label}</span>`);
-    if (day.date === state.today) tags.push('<span class="badge-good">Сегодня</span>');
+    if (badge) tags.push(`<span class="badge ${badge.className}">${badge.label}</span>`);
+    if (day.date === state.today) tags.push('<span class="badge badge-good">Сегодня</span>');
     const notes = day.notes || moduleState.data?.meta?.notes || '';
-    const noteMarkup = notes ? `<p class="flip-card__note">${notes}</p>` : '';
     const guides = collectDayGuides(dayNumber, moduleState.data?.guides || {});
     const guidesMarkup = [];
     if (guides.plantingItems.length) {
-      guidesMarkup.push(`<div>${guides.plantingItems.join(', ')}</div>`);
+      guidesMarkup.push(`Посевы: ${guides.plantingItems.join(', ')}`);
     }
     if (guides.works.length) {
-      guidesMarkup.push(`<div>${guides.works.join(', ')}</div>`);
+      guidesMarkup.push(`Работы: ${guides.works.join(', ')}`);
     }
     const helperMarkup = guidesMarkup.length
-      ? `<div class="text-sm text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-lg px-3 py-2">${guidesMarkup.join('<br />')}</div>`
+      ? `<div class="sheet-helper">${guidesMarkup.map((line) => `<span class="text-wrap">${line}</span>`).join('<br />')}</div>`
       : '';
+    const infoParts = [
+      day.moon_day ? `Лунный день ${day.moon_day}` : 'Лунный день —',
+      `Фаза: ${formatPhase(day.phase)}`,
+      day.zodiac ? `Знак: ${day.zodiac}` : '',
+    ].filter(Boolean);
+    const infoMarkup = `<div class="sheet-info">${infoParts.map((part) => `<span class="text-wrap">${part}</span>`).join('<br />')}</div>`;
+    const noteMarkup = notes ? `<p class="text-sm text-wrap text-muted">${notes}</p>` : '';
 
     return `
-      <div class="flip-card__paper">
-        <div class="flip-card__band">
-          <div class="flip-card__day">${dayNumber}</div>
-          <div class="flip-card__weekday">${formatWeekday(day.date)}</div>
-        </div>
-        <div class="flip-card__body">
-          <div class="flip-card__meta">
-            <div>${moonText}</div>
-            <div>${phaseText}</div>
-            ${zodiacText}
+      <div class="calendar-sheet">
+        <span class="paper-texture" aria-hidden="true"></span>
+        <div class="sheet-head">
+          <div class="sheet-head-group">
+            <div class="sheet-daynum">${dayNumber}</div>
+            <div class="sheet-weekday">${formatWeekday(day.date)}</div>
           </div>
-          ${tags.length ? `<div class="flex flex-wrap gap-2">${tags.join('')}</div>` : ''}
+          ${tags.length ? `<div class="sheet-badges">${tags.join('')}</div>` : ''}
+        </div>
+        <div class="sheet-body">
+          ${infoMarkup}
           ${helperMarkup}
           ${noteMarkup}
-          <div class="flip-card__actions">
-            <button type="button" class="flip-card__more" data-open-day="${idx}">Подробнее</button>
-            <button type="button" class="flip-card__voice" data-voice-day="${idx}" aria-label="Озвучить день">🔊</button>
-          </div>
+        </div>
+        <div class="sheet-foot">
+          <button type="button" class="btn-ghost" data-open-day="${idx}">Подробнее</button>
+          <button type="button" class="btn-ghost" data-voice-day="${idx}" aria-label="Озвучить день">🔊</button>
         </div>
       </div>
     `;
@@ -468,11 +461,11 @@ const FlipCalendar = (() => {
 
     const fragment = document.createDocumentFragment();
     moduleState.data.days.forEach((day, idx) => {
-      const card = document.createElement('article');
-      card.className = 'flip-card';
-      card.dataset.index = String(idx);
-      card.innerHTML = buildCard(day, idx);
-      fragment.appendChild(card);
+      const page = document.createElement('article');
+      page.className = 'page';
+      page.dataset.index = String(idx);
+      page.innerHTML = buildCard(day, idx);
+      fragment.appendChild(page);
     });
     stackEl.appendChild(fragment);
     updateStack(true);
@@ -480,7 +473,7 @@ const FlipCalendar = (() => {
 
   function updateStack(silent = false) {
     if (!stackEl || !moduleState.data?.days?.length) return;
-    const cards = stackEl.querySelectorAll('.flip-card');
+    const cards = stackEl.querySelectorAll('.page');
     cards.forEach((card) => {
       const cardIndex = Number(card.dataset.index);
       const offset = cardIndex - moduleState.index;
@@ -552,7 +545,7 @@ const FlipCalendar = (() => {
     if (token !== moduleState.loadingToken) return payload;
     if (!payload) {
       setLoading(false);
-      Toast.show('Нет данных календаря', 'info');
+      Toast.show('Нет данных календаря', true);
       return null;
     }
     moduleState.month = iso;
@@ -577,7 +570,7 @@ const FlipCalendar = (() => {
   function handlePrevMonth() {
     const target = prevMonth(moduleState.month);
     if (!target.startsWith('2025')) {
-      Toast.show('Доступен только 2025 год', 'info');
+      Toast.show('Доступен только 2025 год', true);
       return;
     }
     loadMonth(target);
@@ -586,7 +579,7 @@ const FlipCalendar = (() => {
   function handleNextMonth() {
     const target = nextMonth(moduleState.month);
     if (!target.startsWith('2025')) {
-      Toast.show('Доступен только 2025 год', 'info');
+      Toast.show('Доступен только 2025 год', true);
       return;
     }
     loadMonth(target);
@@ -595,7 +588,7 @@ const FlipCalendar = (() => {
   function handleToday() {
     const iso = state.today.slice(0, 7);
     if (!iso.startsWith('2025')) {
-      Toast.show('Доступен только 2025 год', 'info');
+      Toast.show('Доступен только 2025 год', true);
       return;
     }
     const targetIdx = Math.max(0, Number(state.today.slice(-2)) - 1);
@@ -687,13 +680,14 @@ function openDaySheet(day, data) {
   };
   if (category) {
     const status = document.createElement('div');
-    status.innerHTML = `<span class="${badgeMap[category]}">${labelMap[category]}</span>`;
+    status.className = 'badge-wrap';
+    status.innerHTML = `<span class="badge ${badgeMap[category]}">${labelMap[category]}</span>`;
     body.appendChild(status);
   }
 
   if (dayInfo?.notes) {
     const note = document.createElement('div');
-    note.className = 'text-sm text-emerald-800 bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-3';
+    note.className = 'note-box text-sm text-wrap';
     note.textContent = dayInfo.notes;
     body.appendChild(note);
   }
@@ -703,8 +697,8 @@ function openDaySheet(day, data) {
   if (plantingItems.length) {
     const plantingBlock = document.createElement('div');
     plantingBlock.innerHTML = `
-      <h4 class="font-semibold text-lg">Посевы</h4>
-      <ul class="list-disc pl-5 space-y-1">${plantingItems.map((item) => `<li>${item}</li>`).join('')}</ul>
+      <h4 class="text-lg text-strong">Посевы</h4>
+      <ul class="list">${plantingItems.map((item) => `<li class="text-wrap">${item}</li>`).join('')}</ul>
     `;
     body.appendChild(plantingBlock);
   }
@@ -712,15 +706,15 @@ function openDaySheet(day, data) {
   if (works.length) {
     const worksBlock = document.createElement('div');
     worksBlock.innerHTML = `
-      <h4 class="font-semibold text-lg">Работы</h4>
-      <ul class="list-disc pl-5 space-y-1">${works.map((item) => `<li>${item}</li>`).join('')}</ul>
+      <h4 class="text-lg text-strong">Работы</h4>
+      <ul class="list">${works.map((item) => `<li class="text-wrap">${item}</li>`).join('')}</ul>
     `;
     body.appendChild(worksBlock);
   }
 
   if (!plantingItems.length && !works.length && !dayInfo?.notes) {
     const empty = document.createElement('p');
-    empty.className = 'text-sm text-slate-500';
+    empty.className = 'text-sm text-muted';
     empty.textContent = 'Нет специальных рекомендаций на этот день.';
     body.appendChild(empty);
   }
@@ -772,7 +766,7 @@ function renderPlantingList(planting, monthIso = state.currentMonth) {
     skeleton?.classList.add('hidden');
     list.classList.remove('hidden');
     const emptyLabel = monthLabelRaw === 'месяц' ? 'этот месяц' : monthLabelRaw;
-    list.innerHTML = `<p class="text-sm text-slate-500">Нет данных о посевах на ${emptyLabel}.</p>`;
+    list.innerHTML = `<p class="text-sm text-muted">Нет данных о посевах на ${emptyLabel}.</p>`;
     return;
   }
 
@@ -780,15 +774,15 @@ function renderPlantingList(planting, monthIso = state.currentMonth) {
   items.forEach((item) => {
     const button = document.createElement('button');
     button.type = 'button';
-    button.className = 'w-full text-left bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 flex flex-col gap-2 transition hover:border-emerald-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-400';
+    button.className = 'planting-item';
     const datesLabel = (item.dates || []).map((date) => String(date)).join(', ');
     button.setAttribute('data-planting', item.name);
     button.setAttribute('data-dates', datesLabel);
     button.innerHTML = `
-      <p class="text-xs uppercase tracking-wide text-emerald-600">${item.category}</p>
-      <p class="font-semibold leading-snug">${item.name}</p>
-      <div class="flex flex-wrap gap-2">
-        ${(item.dates || []).map((date) => `<span class="badge-good">${String(date).padStart(2, '0')}</span>`).join('')}
+      <span class="planting-item__category">${item.category}</span>
+      <span class="planting-item__title text-wrap">${item.name}</span>
+      <div class="planting-item__dates">
+        ${(item.dates || []).map((date) => `<span class="badge badge-good">${String(date).padStart(2, '0')}</span>`).join('')}
       </div>
     `;
     fragment.appendChild(button);
@@ -805,15 +799,16 @@ function setActiveTab(tab) {
   if (state.activeTab === tab) return;
   state.activeTab = tab;
   $$('[data-tab]').forEach((btn) => {
-    btn.classList.toggle('tabbar__item--active', btn.dataset.tab === tab);
-    btn.setAttribute('aria-current', btn.dataset.tab === tab ? 'page' : 'false');
+    const isActive = btn.dataset.tab === tab;
+    btn.classList.toggle('active', isActive);
+    btn.setAttribute('aria-current', isActive ? 'page' : 'false');
   });
   $$('[data-screen]').forEach((screen) => {
     screen.classList.toggle('hidden', screen.dataset.screen !== tab);
   });
   const fab = $('#fab-voice');
   fab?.classList.toggle('hidden', tab !== 'home');
-  $('#main')?.focus();
+  $('#page')?.focus();
   if (tab !== 'home') {
     window.speechSynthesis?.cancel?.();
   }
@@ -824,7 +819,7 @@ function openModal({ title, steps }) {
   if (!modal) return;
   $('#modal-title').textContent = title;
   const body = $('#modal-body');
-  body.innerHTML = `<ul class="list-disc pl-5 space-y-2">${(steps || []).map((step) => `<li>${step}</li>`).join('')}</ul>`;
+  body.innerHTML = `<ul class="list">${(steps || []).map((step) => `<li class="text-wrap">${step}</li>`).join('')}</ul>`;
   modal.classList.remove('hidden');
   $('.modal__close')?.focus();
 }
@@ -849,7 +844,7 @@ async function markDone() {
     tg?.HapticFeedback?.impactOccurred('light');
   } catch (err) {
     console.warn('Mark done offline?', err);
-    Toast.show('Отмечено. Сохраним при подключении', 'info');
+    Toast.show('Отмечено. Сохраним при подключении', true);
   }
 }
 
@@ -858,12 +853,14 @@ function bindProfile() {
   const climate = $('#climate');
   const bigText = $('#pref-big-text');
   const highContrast = $('#pref-high-contrast');
+  const night = $('#pref-night');
   const cultures = $$('input[name="cultures"]');
 
   if (region) region.value = state.region;
   if (climate) climate.value = state.climate;
   if (bigText) bigText.checked = localStorage.getItem('bigText') === '1';
   if (highContrast) highContrast.checked = localStorage.getItem('hiContrast') === '1';
+  if (night) night.checked = localStorage.getItem('night') === '1';
   cultures.forEach((checkbox) => {
     checkbox.checked = state.cultures.includes(checkbox.value);
   });
@@ -882,6 +879,10 @@ function bindProfile() {
   });
   highContrast?.addEventListener('change', (e) => {
     localStorage.setItem('hiContrast', e.target.checked ? '1' : '0');
+    applyPrefs();
+  });
+  night?.addEventListener('change', (e) => {
+    localStorage.setItem('night', e.target.checked ? '1' : '0');
     applyPrefs();
   });
   cultures.forEach((checkbox) => {
@@ -907,7 +908,7 @@ async function loadData() {
     console.warn('Falling back to demo home data', err);
     state.demo = true;
     state.home = await getHomeFromLocal(state.today);
-    Toast.show('Демо-режим: локальные данные', 'info');
+    Toast.show('Демо-режим: локальные данные', true);
   }
 
   const monthKey = state.today.slice(0, 7).replace('-', '_');
@@ -925,7 +926,7 @@ async function loadData() {
   renderImportant();
 
   if (state.demo && !demoRequested) {
-    Toast.show('Демо-режим: локальные данные', 'info');
+    Toast.show('Демо-режим: локальные данные', true);
   }
 }
 
@@ -970,7 +971,7 @@ function handleGlobalClicks(event) {
     event.preventDefault();
     const dates = plantingItem.getAttribute('data-dates');
     if (dates) {
-      Toast.show(`Лучшие даты: ${dates}`, 'info');
+      Toast.show(`Лучшие даты: ${dates}`, true);
       tg?.HapticFeedback?.impactOccurred?.('light');
     }
     return;
@@ -1017,7 +1018,7 @@ function init() {
   });
 
   if (state.demo) {
-    Toast.show('Демо-режим: локальные данные', 'info');
+    Toast.show('Демо-режим: локальные данные', true);
   }
 
   FlipCalendar.init();
