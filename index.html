@@ -6,71 +6,244 @@
   <title>Алёшка — бабушкин помощник</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/assets/styles.css" />
 </head>
-<body class="bg-emerald-50 text-slate-900">
-  <div id="app" class="max-w-xl mx-auto p-4">
-    <!-- Header -->
-    <header class="mb-5 flex items-center gap-3">
-      <img src="/assets/icons/sprout.svg" alt="" class="w-10 h-10 text-emerald-700" />
+<body class="app-body">
+  <div id="app" class="app-shell">
+    <header class="app-header" aria-labelledby="app-title">
+      <div class="icon-chip icon-chip--accent" aria-hidden="true">
+        <img src="/assets/icons/sprout.svg" alt="" class="w-6 h-6" />
+      </div>
       <div>
-        <h1 class="text-3xl font-extrabold tracking-tight">Алёшка</h1>
-        <p class="text-sm text-slate-600">Бабушкин помощник: огород • луна • важно</p>
+        <h1 id="app-title" class="app-title">Алёшка</h1>
+        <p class="app-subtitle">Тихий помощник для сада и дома</p>
       </div>
     </header>
 
-    <!-- Cards -->
-    <main class="space-y-4">
-      <!-- Lunar -->
-      <section id="card-lunar" class="card">
-        <div class="card-head">
-          <div class="flex items-center gap-2">
-            <img src="/assets/icons/moon.svg" class="w-6 h-6" alt="" />
-            <h2 class="card-title">Лунный календарь</h2>
-          </div>
-          <button class="icon-btn" data-say="#lunar-content" aria-label="Озвучить">🔊</button>
+    <main id="main" class="app-main" tabindex="-1">
+      <section data-screen="home" class="screen" aria-labelledby="home-heading">
+        <h2 id="home-heading" class="sr-only">Дом</h2>
+        <div class="space-y-4">
+          <article class="card" data-card="lunar">
+            <header class="card__header">
+              <div class="card__title-group">
+                <div class="icon-chip">
+                  <img src="/assets/icons/moon.svg" alt="Фаза луны" class="w-6 h-6" />
+                </div>
+                <h3 class="card__title">Лунный день</h3>
+              </div>
+              <button class="btn-ghost a11y-focus" data-say="#card-lunar-content" aria-label="Озвучить карточку про луну">🔊</button>
+            </header>
+            <div class="card__body">
+              <div class="skeleton h-24" id="card-lunar-skeleton"></div>
+              <div id="card-lunar-content" class="card__content hidden" aria-live="polite"></div>
+            </div>
+          </article>
+
+          <article class="card" data-card="garden">
+            <header class="card__header">
+              <div class="card__title-group">
+                <div class="icon-chip">
+                  <img src="/assets/icons/plant.svg" alt="Совет по огороду" class="w-6 h-6" />
+                </div>
+                <h3 class="card__title">Совет по огороду</h3>
+              </div>
+              <button class="btn-ghost a11y-focus" data-say="#card-garden-content" aria-label="Озвучить карточку про огород">🔊</button>
+            </header>
+            <div class="card__body">
+              <div class="skeleton h-28" id="card-garden-skeleton"></div>
+              <div id="card-garden-content" class="card__content hidden" aria-live="polite"></div>
+            </div>
+          </article>
+
+          <article class="card" data-card="important">
+            <header class="card__header">
+              <div class="card__title-group">
+                <div class="icon-chip">
+                  <img src="/assets/icons/shield.svg" alt="Важно" class="w-6 h-6" />
+                </div>
+                <h3 class="card__title">Важно сегодня</h3>
+              </div>
+              <button class="btn-ghost a11y-focus" data-say="#card-important-content" aria-label="Озвучить карточку важно">🔊</button>
+            </header>
+            <div class="card__body">
+              <div class="skeleton h-24" id="card-important-skeleton"></div>
+              <div id="card-important-content" class="card__content hidden" aria-live="polite"></div>
+            </div>
+          </article>
         </div>
-        <div id="lunar-skel" class="skeleton h-16"></div>
-        <div id="lunar-content" class="card-body text-lg hidden"></div>
       </section>
 
-      <!-- Garden -->
-      <section id="card-garden" class="card">
-        <div class="card-head">
-          <div class="flex items-center gap-2">
-            <img src="/assets/icons/plant.svg" class="w-6 h-6" alt="" />
-            <h2 class="card-title">Совет по огороду</h2>
+      <section data-screen="garden" class="screen hidden" aria-labelledby="garden-heading">
+        <h2 id="garden-heading" class="screen-title">Огород</h2>
+        <div id="garden-list" class="space-y-4" aria-live="polite">
+          <div class="card">
+            <div class="card__body">
+              <div class="skeleton h-20"></div>
+            </div>
           </div>
-          <button class="icon-btn" data-say="#garden-content" aria-label="Озвучить">🔊</button>
+          <div class="card">
+            <div class="card__body">
+              <div class="skeleton h-20"></div>
+            </div>
+          </div>
         </div>
-        <div id="garden-skel" class="skeleton h-20"></div>
-        <div id="garden-content" class="card-body text-lg hidden"></div>
       </section>
 
-      <!-- Important -->
-      <section id="card-important" class="card">
-        <div class="card-head">
-          <div class="flex items-center gap-2">
-            <img src="/assets/icons/shield.svg" class="w-6 h-6" alt="" />
-            <h2 class="card-title">Важно сегодня</h2>
+      <section data-screen="calendar" class="screen hidden" aria-labelledby="calendar-heading">
+        <h2 id="calendar-heading" class="screen-title">Календарь</h2>
+        <div class="card">
+          <div class="card__body">
+            <div class="skeleton h-32" id="calendar-skeleton"></div>
+            <div id="calendar-grid" class="calendar hidden" aria-live="polite"></div>
           </div>
-          <button class="icon-btn" data-say="#important-content" aria-label="Озвучить">🔊</button>
         </div>
-        <div id="important-skel" class="skeleton h-16"></div>
-        <div id="important-content" class="card-body text-lg hidden"></div>
+      </section>
+
+      <section data-screen="important" class="screen hidden" aria-labelledby="important-heading">
+        <h2 id="important-heading" class="screen-title">Важно</h2>
+        <div id="important-list" class="space-y-4" aria-live="polite">
+          <div class="card">
+            <div class="card__body">
+              <div class="skeleton h-20"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section data-screen="profile" class="screen hidden" aria-labelledby="profile-heading">
+        <h2 id="profile-heading" class="screen-title">Профиль</h2>
+        <form id="profile-form" class="space-y-6" novalidate>
+          <div class="card">
+            <div class="card__body space-y-4">
+              <div>
+                <label for="region" class="block text-sm font-medium text-slate-600">Регион</label>
+                <select id="region" name="region" class="input a11y-focus" aria-describedby="region-help">
+                  <option value="RU-MOW">Москва и область</option>
+                  <option value="RU-SPE">Санкт-Петербург</option>
+                  <option value="RU-KGD">Калининград</option>
+                  <option value="RU-KHA">Хабаровский край</option>
+                  <option value="RU-KDA">Краснодарский край</option>
+                </select>
+                <p id="region-help" class="text-xs text-slate-500">Нужен для погодных подсказок</p>
+              </div>
+              <div>
+                <label for="climate" class="block text-sm font-medium text-slate-600">Климатическая зона</label>
+                <select id="climate" name="climate" class="input a11y-focus">
+                  <option value="temperate">Умеренная</option>
+                  <option value="continental">Континентальная</option>
+                  <option value="north">Северная</option>
+                  <option value="south">Южная</option>
+                </select>
+              </div>
+              <fieldset>
+                <legend class="block text-sm font-medium text-slate-600 mb-2">Любимые культуры</legend>
+                <div class="grid grid-cols-2 gap-3" id="favorite-cultures">
+                  <label class="checkbox">
+                    <input type="checkbox" name="cultures" value="томаты" />
+                    <span>Томаты</span>
+                  </label>
+                  <label class="checkbox">
+                    <input type="checkbox" name="cultures" value="огурцы" />
+                    <span>Огурцы</span>
+                  </label>
+                  <label class="checkbox">
+                    <input type="checkbox" name="cultures" value="клубника" />
+                    <span>Клубника</span>
+                  </label>
+                  <label class="checkbox">
+                    <input type="checkbox" name="cultures" value="картофель" />
+                    <span>Картофель</span>
+                  </label>
+                  <label class="checkbox">
+                    <input type="checkbox" name="cultures" value="лук" />
+                    <span>Лук</span>
+                  </label>
+                  <label class="checkbox">
+                    <input type="checkbox" name="cultures" value="цветы" />
+                    <span>Цветы</span>
+                  </label>
+                </div>
+              </fieldset>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card__body space-y-4">
+              <div class="toggle">
+                <div>
+                  <p class="toggle__title">Крупный шрифт</p>
+                  <p class="toggle__hint">Увеличивает текст на 20%</p>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" id="pref-big-text" />
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <div class="toggle">
+                <div>
+                  <p class="toggle__title">Высокий контраст</p>
+                  <p class="toggle__hint">Более насыщенные цвета</p>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" id="pref-high-contrast" />
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <button type="button" id="btn-check-voice" class="btn w-full">Проверить озвучку</button>
+              <button type="button" id="btn-demo" class="btn-secondary w-full">Включить демо-режим</button>
+            </div>
+          </div>
+        </form>
       </section>
     </main>
-
-    <!-- Footer -->
-    <footer class="mt-6 flex gap-3">
-      <button id="btn-voice-all" class="btn">Озвучить всё</button>
-      <button id="btn-done" class="btn-secondary">Отметить «сделано»</button>
-      <button id="btn-demo" class="btn-ghost ml-auto">Демо</button>
-    </footer>
   </div>
 
-  <!-- Toasts -->
-  <div id="toast" class="toast hidden"></div>
+  <nav class="tabbar" aria-label="Основная навигация">
+    <button class="tabbar__item tabbar__item--active" data-tab="home">
+      <img src="/assets/icons/home.svg" alt="Дом" />
+      <span>Дом</span>
+    </button>
+    <button class="tabbar__item" data-tab="garden">
+      <img src="/assets/icons/garden.svg" alt="Огород" />
+      <span>Огород</span>
+    </button>
+    <button class="tabbar__item" data-tab="calendar">
+      <img src="/assets/icons/calendar.svg" alt="Календарь" />
+      <span>Календарь</span>
+    </button>
+    <button class="tabbar__item" data-tab="important">
+      <img src="/assets/icons/important.svg" alt="Важно" />
+      <span>Важно</span>
+    </button>
+    <button class="tabbar__item" data-tab="profile">
+      <img src="/assets/icons/user.svg" alt="Профиль" />
+      <span>Профиль</span>
+    </button>
+  </nav>
+
+  <button class="fab" id="fab-voice" aria-label="Озвучить экран">
+    🔊
+  </button>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <div id="modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal__backdrop" data-close="modal"></div>
+    <div class="modal__content" role="document">
+      <div class="modal__header">
+        <h3 id="modal-title" class="modal__title"></h3>
+        <button class="btn-ghost modal__close a11y-focus" type="button" data-close="modal" aria-label="Закрыть">✕</button>
+      </div>
+      <div id="modal-body" class="modal__body"></div>
+      <div class="modal__footer">
+        <button type="button" class="btn-secondary w-full" data-close="modal">Понятно</button>
+      </div>
+    </div>
+  </div>
 
   <script src="/assets/app.js"></script>
 </body>
