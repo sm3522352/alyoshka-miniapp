@@ -24,15 +24,38 @@ const Toast = {
   },
 };
 
+const monthsRu = [
+  'Январь',
+  'Февраль',
+  'Март',
+  'Апрель',
+  'Май',
+  'Июнь',
+  'Июль',
+  'Август',
+  'Сентябрь',
+  'Октябрь',
+  'Ноябрь',
+  'Декабрь',
+];
+
+const cache = (window.__aly_cache = window.__aly_cache || { lunar: {} });
+
 const state = {
-  calendarCategory: 'phenology',
-  feedArticles: [],
-  feedUpdatedAt: null,
-  feedFilter: 'all',
-  pamphlets: [],
-  clubs: [],
-  clubPosts: {},
-  activeClub: null
+
+  activeTab: 'home',
+  today: new Date().toISOString().slice(0, 10),
+  region: localStorage.getItem('region') || 'RU-MOW',
+  climate: localStorage.getItem('climate') || 'temperate',
+  cultures: JSON.parse(localStorage.getItem('cultures') || '[]'),
+  home: null,
+  garden: [],
+  important: [],
+  lunarMonth: null,
+  currentMonth: '2025-12',
+  calendarData: null,
+  demo: false,
+
 };
 
 const speak = (text) => {
@@ -59,7 +82,7 @@ const speakHome = () => {
   const { lunar = {}, garden = {}, important = {} } = state.home;
   const lines = [
     'Лунный календарь.',
-    `День ${lunar?.moon_day || '—'}, фаза ${formatPhase(lunar?.phase)}.`,
+    `День ${lunar?.moon_day || '—'}, ${phaseSpeech(lunar?.phase)}.`,
     `Хорошо: ${(lunar?.is_good_for || []).join(', ') || '—'}.`,
     `Не рекомендуется: ${(lunar?.is_bad_for || []).join(', ') || '—'}.`,
     'Совет по огороду.',
@@ -92,26 +115,6 @@ const safeJsonFetch = async (url, fallback) => {
     return fallback;
   }
 };
-
-async function loadMonth(month) {
-  const url = `${API_BASE}/lunar?month=${month}`;
-  try {
-    const res = await fetch(url);
-    if (!res.ok) throw new Error('Bad response');
-    return await res.json();
-  } catch (err) {
-    console.warn('Falling back to local month data', err);
-    const monthKey = month.replace('-', '_');
-    const [lunarFallback, guidesFallback] = await Promise.all([
-      safeJsonFetch(`/data/lunar_${monthKey}.json`, null),
-      safeJsonFetch(`/data/guides_${monthKey}.json`, null),
-    ]);
-    if (!lunarFallback) {
-      throw err;
-    }
-    return { ...lunarFallback, guides: guidesFallback };
-  }
-}
 
 async function getHomeFromApi(date, region) {
   const url = `${API_BASE}/home?date=${encodeURIComponent(date)}&region=${encodeURIComponent(region)}`;
@@ -154,7 +157,7 @@ async function getHomeFromLocal(date) {
 }
 
 function formatPhase(phase) {
-  if (!phase) return '—';
+  if (!phase || phase === 'unknown') return '—';
   const map = {
     waxing: 'растущая',
     waning: 'убывающая',
@@ -162,6 +165,76 @@ function formatPhase(phase) {
     new: 'новолуние',
   };
   return map[phase] || phase;
+}
+
+function phaseSpeech(phase) {
+  if (!phase || phase === 'unknown') return 'фаза не указана';
+  const label = formatPhase(phase);
+  if (label === '—') return 'фаза не указана';
+  return `фаза ${label}`;
+}
+
+function prevMonth(iso) {
+  let [year, month] = iso.split('-').map(Number);
+  if (month === 1) {
+    year -= 1;
+    month = 12;
+  } else {
+    month -= 1;
+  }
+  return `${year}-${String(month).padStart(2, '0')}`;
+}
+
+function nextMonth(iso) {
+  let [year, month] = iso.split('-').map(Number);
+  if (month === 12) {
+    year += 1;
+    month = 1;
+  } else {
+    month += 1;
+  }
+  return `${year}-${String(month).padStart(2, '0')}`;
+}
+
+async function fetchMonthPayload(iso) {
+  if (cache.lunar[iso]) return cache.lunar[iso];
+  try {
+    const res = await fetch(`/api/lunar?month=${iso}`);
+    if (res.ok) {
+      const payload = await res.json();
+      cache.lunar[iso] = payload;
+      return payload;
+    }
+  } catch (err) {
+    console.warn('API lunar fetch fallback', iso, err);
+  }
+
+  const file = iso.replace('-', '_');
+  try {
+    const [lunar, guides] = await Promise.all([
+      fetch(`/data/lunar_${file}.json`).then((r) => (r.ok ? r.json() : null)),
+      fetch(`/data/guides_${file}.json`)
+        .then((r) => (r.ok ? r.json() : null))
+        .catch(() => null),
+    ]);
+    if (lunar) {
+      const payload = { ...lunar, guides: guides || { month: iso, planting: { vegetables: [], flowers: [] }, works: [], unfavorable: [] } };
+      cache.lunar[iso] = payload;
+      return payload;
+    }
+  } catch (err) {
+    console.warn('Local lunar fallback failed', iso, err);
+  }
+  return null;
+}
+
+async function warmCache(iso) {
+  if (!iso || cache.lunar[iso]) return;
+  try {
+    await fetchMonthPayload(iso);
+  } catch (err) {
+    console.warn('warm cache fail', iso, err);
+  }
 }
 
 function renderHome() {
@@ -234,72 +307,6 @@ function getDayCategory(day, meta = {}) {
   return null;
 }
 
-function renderCalendarGrid(data) {
-  const grid = $('#calendar-grid');
-  const skeleton = $('#calendar-skeleton');
-  const legend = $('#calendar-legend');
-  if (!grid) return;
-
-  grid.innerHTML = '';
-
-  if (!data?.days?.length) {
-    skeleton?.classList.add('hidden');
-    grid.classList.remove('hidden');
-    legend?.classList.add('hidden');
-    grid.innerHTML = '<p class="col-span-7 text-center text-slate-500">Нет данных за декабрь 2025.</p>';
-    return;
-  }
-
-  const totalDays = 31;
-  const meta = data.meta || {};
-  const badgeMap = {
-    best: 'badge-best',
-    good: 'badge-good',
-    neutral: 'badge-neutral',
-    bad: 'badge-bad',
-  };
-  const labelMap = {
-    best: 'Самые благоприятные',
-    good: 'Благоприятные',
-    neutral: 'Нейтральные',
-    bad: 'Самые неблагоприятные',
-  };
-  const dayLookup = new Map();
-  data.days.forEach((item) => {
-    const dayNum = Number(item.date.slice(-2));
-    dayLookup.set(dayNum, item);
-  });
-
-  const fragment = document.createDocumentFragment();
-
-  for (let day = 1; day <= totalDays; day += 1) {
-    const cell = document.createElement('button');
-    cell.type = 'button';
-    cell.className = 'calendar-cell';
-    cell.setAttribute('data-day', String(day));
-    cell.dataset.label = labelMap[getDayCategory(day, meta)] || '';
-    const dayInfo = dayLookup.get(day);
-    const category = getDayCategory(day, meta);
-    const badgeClass = category ? badgeMap[category] : '';
-    const badgeLabel = category ? labelMap[category] : '';
-    const moonInfo = dayInfo?.moon_day ? `Лунный день ${dayInfo.moon_day}` : 'Нет данных';
-    const phaseInfo = dayInfo?.phase ? `Фаза: ${formatPhase(dayInfo.phase)}` : '';
-    cell.innerHTML = `
-      <div class="num">${day}</div>
-      <div class="text-xs text-slate-500">${moonInfo}</div>
-      ${phaseInfo ? `<div class="text-xs text-slate-400">${phaseInfo}</div>` : ''}
-      ${badgeClass ? `<span class="${badgeClass}">${badgeLabel}</span>` : ''}
-    `;
-    fragment.appendChild(cell);
-  }
-
-  grid.dataset.month = data.month || '2025-12';
-  grid.appendChild(fragment);
-  skeleton?.classList.add('hidden');
-  grid.classList.remove('hidden');
-  legend?.classList.remove('hidden');
-}
-
 function collectDayGuides(day, guides = {}) {
   const planting = guides.planting || {};
   const plantingItems = [];
@@ -321,6 +328,323 @@ function collectDayGuides(day, guides = {}) {
 
   return { plantingItems, works };
 }
+
+const FlipCalendar = (() => {
+  const stackEl = $('#calendar-stack');
+  const containerEl = $('#calendar-flip');
+  const skeletonEl = $('#calendar-skeleton');
+  const legendEl = $('#calendar-legend');
+  const titleEl = $('#calendar-title');
+  const dayLabelEl = $('#calendar-day-label');
+  const btnPrevMonth = $('#calendar-month-prev');
+  const btnNextMonth = $('#calendar-month-next');
+  const btnToday = $('#calendar-today');
+  const btnPrevDay = $('#calendar-day-prev');
+  const btnNextDay = $('#calendar-day-next');
+
+  const badgeMap = {
+    best: { className: 'badge-best', label: 'Самые благоприятные' },
+    good: { className: 'badge-good', label: 'Благоприятные' },
+    neutral: { className: 'badge-neutral', label: 'Нейтральные' },
+    bad: { className: 'badge-bad', label: 'Самые неблагоприятные' },
+  };
+
+  const moduleState = {
+    month: state.currentMonth,
+    index: 0,
+    data: null,
+    loadingToken: 0,
+    loadingStartedAt: 0,
+  };
+
+  function fmtMonthTitle(iso) {
+    const [yearStr, monthStr] = iso.split('-');
+    const monthIndex = Number(monthStr) - 1;
+    const monthLabel = monthsRu[monthIndex] || '';
+    if (!monthLabel) return iso;
+    return `${monthLabel} ${yearStr}`;
+  }
+
+  function formatWeekday(dateStr) {
+    const date = new Date(`${dateStr}T00:00:00`);
+    if (Number.isNaN(date.getTime())) return '';
+    const label = date.toLocaleDateString('ru-RU', { weekday: 'long' });
+    return label.charAt(0).toUpperCase() + label.slice(1);
+  }
+
+  function fmtDayLabel(dateStr) {
+    const date = new Date(`${dateStr}T00:00:00`);
+    if (Number.isNaN(date.getTime())) return dateStr;
+    const label = date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+    return label.charAt(0).toUpperCase() + label.slice(1);
+  }
+
+  function setLoading(flag) {
+    if (flag) {
+      moduleState.loadingStartedAt = Date.now();
+      skeletonEl?.classList.remove('hidden');
+      containerEl?.classList.add('hidden');
+      btnPrevMonth?.setAttribute('data-loading', '1');
+      btnNextMonth?.setAttribute('data-loading', '1');
+      legendEl?.classList.add('hidden');
+    } else {
+      skeletonEl?.classList.add('hidden');
+      if (moduleState.data?.days?.length) {
+        containerEl?.classList.remove('hidden');
+        legendEl?.classList.remove('hidden');
+      } else {
+        containerEl?.classList.add('hidden');
+        legendEl?.classList.add('hidden');
+      }
+      btnPrevMonth?.removeAttribute('data-loading');
+      btnNextMonth?.removeAttribute('data-loading');
+    }
+  }
+
+  function getBadge(dayNumber, dayInfo) {
+    const meta = moduleState.data?.meta || {};
+    let category = getDayCategory(dayNumber, meta);
+    if (!category && dayInfo?.phase === 'unknown') {
+      category = 'neutral';
+    }
+    return category ? badgeMap[category] : null;
+  }
+
+  function buildCard(day, idx) {
+    const dayNumber = Number(day.date.slice(-2));
+    const moonText = day.moon_day ? `Лунный день ${day.moon_day}` : 'Лунный день —';
+    const phaseText = `Фаза: ${formatPhase(day.phase)}`;
+    const zodiacText = day.zodiac ? `<div>Знак: ${day.zodiac}</div>` : '';
+    const badge = getBadge(dayNumber, day);
+    const tags = [];
+    if (badge) tags.push(`<span class="flip-card__badge ${badge.className}">${badge.label}</span>`);
+    if (day.date === state.today) tags.push('<span class="badge-good">Сегодня</span>');
+    const notes = day.notes || moduleState.data?.meta?.notes || '';
+    const noteMarkup = notes ? `<p class="flip-card__note">${notes}</p>` : '';
+    const guides = collectDayGuides(dayNumber, moduleState.data?.guides || {});
+    const guidesMarkup = [];
+    if (guides.plantingItems.length) {
+      guidesMarkup.push(`<div>${guides.plantingItems.join(', ')}</div>`);
+    }
+    if (guides.works.length) {
+      guidesMarkup.push(`<div>${guides.works.join(', ')}</div>`);
+    }
+    const helperMarkup = guidesMarkup.length
+      ? `<div class="text-sm text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-lg px-3 py-2">${guidesMarkup.join('<br />')}</div>`
+      : '';
+
+    return `
+      <div class="flip-card__paper">
+        <div class="flip-card__band">
+          <div class="flip-card__day">${dayNumber}</div>
+          <div class="flip-card__weekday">${formatWeekday(day.date)}</div>
+        </div>
+        <div class="flip-card__body">
+          <div class="flip-card__meta">
+            <div>${moonText}</div>
+            <div>${phaseText}</div>
+            ${zodiacText}
+          </div>
+          ${tags.length ? `<div class="flex flex-wrap gap-2">${tags.join('')}</div>` : ''}
+          ${helperMarkup}
+          ${noteMarkup}
+          <div class="flip-card__actions">
+            <button type="button" class="flip-card__more" data-open-day="${idx}">Подробнее</button>
+            <button type="button" class="flip-card__voice" data-voice-day="${idx}" aria-label="Озвучить день">🔊</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function buildStack() {
+    if (!stackEl) return;
+    stackEl.innerHTML = '';
+    if (!moduleState.data?.days?.length) {
+      containerEl?.classList.add('hidden');
+      legendEl?.classList.add('hidden');
+      return;
+    }
+
+    const fragment = document.createDocumentFragment();
+    moduleState.data.days.forEach((day, idx) => {
+      const card = document.createElement('article');
+      card.className = 'flip-card';
+      card.dataset.index = String(idx);
+      card.innerHTML = buildCard(day, idx);
+      fragment.appendChild(card);
+    });
+    stackEl.appendChild(fragment);
+    updateStack(true);
+  }
+
+  function updateStack(silent = false) {
+    if (!stackEl || !moduleState.data?.days?.length) return;
+    const cards = stackEl.querySelectorAll('.flip-card');
+    cards.forEach((card) => {
+      const cardIndex = Number(card.dataset.index);
+      const offset = cardIndex - moduleState.index;
+      card.style.setProperty('--offset', offset);
+      card.classList.toggle('is-active', offset === 0);
+      card.classList.toggle('is-past', offset < 0);
+    });
+    const currentDay = moduleState.data.days[moduleState.index];
+    if (currentDay && dayLabelEl) {
+      dayLabelEl.textContent = fmtDayLabel(currentDay.date);
+    }
+    if (btnPrevDay) btnPrevDay.disabled = moduleState.index <= 0;
+    if (btnNextDay) btnNextDay.disabled = moduleState.index >= moduleState.data.days.length - 1;
+    if (!silent) {
+      tg?.HapticFeedback?.selectionChanged?.();
+    }
+  }
+
+  function selectIndex(idx, silent = false) {
+    if (!moduleState.data?.days?.length) return;
+    const clamped = Math.max(0, Math.min(idx, moduleState.data.days.length - 1));
+    moduleState.index = clamped;
+    updateStack(silent);
+  }
+
+  function speakDay(idx) {
+    const day = moduleState.data?.days?.[idx];
+    if (!day) return;
+    const dayNumber = Number(day.date.slice(-2));
+    const badge = getBadge(dayNumber, day);
+    const voiceParts = [
+      fmtDayLabel(day.date),
+      day.moon_day ? `Лунный день ${day.moon_day}` : 'Лунный день не указан',
+      phaseSpeech(day.phase),
+    ];
+    if (day.zodiac) voiceParts.push(`Знак ${day.zodiac}`);
+    if (badge) voiceParts.push(badge.label);
+    const guides = collectDayGuides(dayNumber, moduleState.data?.guides || {});
+    if (guides.plantingItems.length) voiceParts.push(`Посевы: ${guides.plantingItems.join(', ')}`);
+    if (guides.works.length) voiceParts.push(`Работы: ${guides.works.join(', ')}`);
+    if (day.notes) voiceParts.push(day.notes);
+    speak(voiceParts.join('. '));
+  }
+
+  function handleCardClick(event) {
+    const voiceBtn = event.target.closest('[data-voice-day]');
+    if (voiceBtn) {
+      const idx = Number(voiceBtn.getAttribute('data-voice-day'));
+      if (Number.isFinite(idx)) speakDay(idx);
+      return;
+    }
+    const openBtn = event.target.closest('[data-open-day]');
+    if (openBtn) {
+      const idx = Number(openBtn.getAttribute('data-open-day'));
+      if (Number.isFinite(idx) && moduleState.data?.days?.[idx]) {
+        selectIndex(idx, true);
+        const dayNum = Number(moduleState.data.days[idx].date.slice(-2));
+        openDaySheet(dayNum, moduleState.data);
+      }
+    }
+  }
+
+  async function loadMonth(iso) {
+    moduleState.loadingToken += 1;
+    const token = moduleState.loadingToken;
+    setLoading(true);
+    if (titleEl) titleEl.textContent = fmtMonthTitle(iso);
+    const payload = await fetchMonthPayload(iso);
+    if (token !== moduleState.loadingToken) return payload;
+    if (!payload) {
+      setLoading(false);
+      Toast.show('Нет данных календаря', 'info');
+      return null;
+    }
+    moduleState.month = iso;
+    moduleState.data = payload;
+    state.currentMonth = iso;
+    state.calendarData = payload;
+    buildStack();
+    const todayIso = state.today.slice(0, 7);
+    const gotoIdx = todayIso === iso ? Math.max(0, Math.min(payload.days.length - 1, Number(state.today.slice(-2)) - 1)) : 0;
+    selectIndex(gotoIdx, true);
+    const elapsed = Date.now() - moduleState.loadingStartedAt;
+    if (elapsed < 220) {
+      await new Promise((resolve) => setTimeout(resolve, 220 - elapsed));
+    }
+    setLoading(false);
+    warmCache(prevMonth(iso));
+    warmCache(nextMonth(iso));
+    renderPlantingList(payload.guides?.planting || null, iso);
+    return payload;
+  }
+
+  function handlePrevMonth() {
+    const target = prevMonth(moduleState.month);
+    if (!target.startsWith('2025')) {
+      Toast.show('Доступен только 2025 год', 'info');
+      return;
+    }
+    loadMonth(target);
+  }
+
+  function handleNextMonth() {
+    const target = nextMonth(moduleState.month);
+    if (!target.startsWith('2025')) {
+      Toast.show('Доступен только 2025 год', 'info');
+      return;
+    }
+    loadMonth(target);
+  }
+
+  function handleToday() {
+    const iso = state.today.slice(0, 7);
+    if (!iso.startsWith('2025')) {
+      Toast.show('Доступен только 2025 год', 'info');
+      return;
+    }
+    const targetIdx = Math.max(0, Number(state.today.slice(-2)) - 1);
+    if (moduleState.month !== iso) {
+      loadMonth(iso)?.then(() => {
+        selectIndex(targetIdx);
+      });
+    } else {
+      selectIndex(targetIdx);
+    }
+  }
+
+  function handlePrevDay() {
+    if (moduleState.index <= 0) return;
+    selectIndex(moduleState.index - 1);
+  }
+
+  function handleNextDay() {
+    if (!moduleState.data?.days?.length) return;
+    if (moduleState.index >= moduleState.data.days.length - 1) return;
+    selectIndex(moduleState.index + 1);
+  }
+
+  async function init() {
+    if (!stackEl || !titleEl) return;
+    stackEl.addEventListener('click', handleCardClick);
+    btnPrevMonth?.addEventListener('click', handlePrevMonth);
+    btnNextMonth?.addEventListener('click', handleNextMonth);
+    btnToday?.addEventListener('click', handleToday);
+    btnPrevDay?.addEventListener('click', handlePrevDay);
+    btnNextDay?.addEventListener('click', handleNextDay);
+
+    const todayIso = state.today.slice(0, 7);
+    const initial = todayIso.startsWith('2025') ? todayIso : state.currentMonth;
+    await loadMonth(initial);
+  }
+
+  return {
+    init,
+    loadMonth,
+    selectIndex,
+    get month() {
+      return moduleState.month;
+    },
+    get data() {
+      return moduleState.data;
+    },
+  };
+})();
 
 function openDaySheet(day, data) {
   const sheet = $('#day-sheet');
@@ -345,7 +669,10 @@ function openDaySheet(day, data) {
   if (!body) return;
   body.innerHTML = '';
 
-  const category = getDayCategory(day, data.meta || {});
+  let category = getDayCategory(day, data.meta || {});
+  if (!category && dayInfo?.phase === 'unknown') {
+    category = 'neutral';
+  }
   const badgeMap = {
     best: 'badge-best',
     good: 'badge-good',
@@ -421,7 +748,58 @@ function closeDaySheet() {
   }, 250);
 }
 
-// ...existing code...
+function renderPlantingList(planting, monthIso = state.currentMonth) {
+  const list = $('#planting-list');
+  const skeleton = $('#planting-skeleton');
+  if (!list) return;
+
+  const monthDate = monthIso ? new Date(`${monthIso}-01T00:00:00`) : null;
+  const monthLabelRaw = monthDate && !Number.isNaN(monthDate.getTime())
+    ? monthDate.toLocaleDateString('ru-RU', { month: 'long' })
+    : 'месяц';
+  const plantingTitle = $('#planting-title');
+  if (plantingTitle) {
+    const displayLabel = monthLabelRaw === 'месяц' ? 'месяца' : monthLabelRaw;
+    plantingTitle.textContent = `Посевы ${displayLabel}`;
+  }
+
+  const items = [
+    ...((planting?.vegetables || []).map((item) => ({ ...item, category: 'Овощи' }))),
+    ...((planting?.flowers || []).map((item) => ({ ...item, category: 'Цветы' }))),
+  ];
+
+  if (!items.length) {
+    skeleton?.classList.add('hidden');
+    list.classList.remove('hidden');
+    const emptyLabel = monthLabelRaw === 'месяц' ? 'этот месяц' : monthLabelRaw;
+    list.innerHTML = `<p class="text-sm text-slate-500">Нет данных о посевах на ${emptyLabel}.</p>`;
+    return;
+  }
+
+  const fragment = document.createDocumentFragment();
+  items.forEach((item) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'w-full text-left bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 flex flex-col gap-2 transition hover:border-emerald-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-400';
+    const datesLabel = (item.dates || []).map((date) => String(date)).join(', ');
+    button.setAttribute('data-planting', item.name);
+    button.setAttribute('data-dates', datesLabel);
+    button.innerHTML = `
+      <p class="text-xs uppercase tracking-wide text-emerald-600">${item.category}</p>
+      <p class="font-semibold leading-snug">${item.name}</p>
+      <div class="flex flex-wrap gap-2">
+        ${(item.dates || []).map((date) => `<span class="badge-good">${String(date).padStart(2, '0')}</span>`).join('')}
+      </div>
+    `;
+    fragment.appendChild(button);
+  });
+
+  list.innerHTML = '';
+  list.appendChild(fragment);
+  skeleton?.classList.add('hidden');
+  list.classList.remove('hidden');
+}
+
 
 function setActiveTab(tab) {
   if (state.activeTab === tab) return;
@@ -542,19 +920,9 @@ async function loadData() {
   state.important = important;
   state.lunarMonth = lunar;
 
-  try {
-    state.calendarData = await loadMonth('2025-12');
-  } catch (err) {
-    console.warn('Не удалось загрузить календарь на декабрь 2025', err);
-    state.calendarData = null;
-    Toast.show('Нет данных календаря за декабрь 2025', 'info');
-  }
-
   renderHome();
   renderGarden();
   renderImportant();
-  renderCalendarGrid(state.calendarData);
-  renderPlantingList(state.calendarData?.guides?.planting || null);
 
   if (state.demo && !demoRequested) {
     Toast.show('Демо-режим: локальные данные', 'info');
@@ -631,14 +999,6 @@ function handleGardenCardClick(event) {
   openModal({ title: tip.title, steps: tip.steps });
 }
 
-function handleCalendarGridClick(event) {
-  const cell = event.target.closest('[data-day]');
-  if (!cell) return;
-  const day = Number(cell.getAttribute('data-day'));
-  if (!Number.isFinite(day) || !state.calendarData) return;
-  openDaySheet(day, state.calendarData);
-}
-
 function init() {
   tg?.expand();
   tg?.MainButton?.hide();
@@ -648,7 +1008,6 @@ function init() {
 
   document.addEventListener('click', handleGlobalClicks);
   $('#garden-list')?.addEventListener('click', handleGardenCardClick);
-  $('#calendar-grid')?.addEventListener('click', handleCalendarGridClick);
   $('#fab-voice')?.addEventListener('click', speakHome);
   $('#btn-check-voice')?.addEventListener('click', () => speak('Проверка озвучки. Всё работает.'));
   $('#btn-demo')?.addEventListener('click', () => {
@@ -661,6 +1020,7 @@ function init() {
     Toast.show('Демо-режим: локальные данные', 'info');
   }
 
+  FlipCalendar.init();
   loadData();
 }
 
