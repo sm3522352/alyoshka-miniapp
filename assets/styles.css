@@ -1,0 +1,15 @@
+.card{
+  @apply bg-white rounded-2xl shadow p-4;
+}
+.card-title{
+  @apply text-xl font-semibold mb-2;
+}
+.card-body{
+  @apply space-y-2;
+}
+.btn{
+  @apply bg-emerald-600 text-white px-4 py-2 rounded-xl shadow;
+}
+.btn-secondary{
+  @apply bg-white text-emerald-700 border border-emerald-600 px-4 py-2 rounded-xl;
+}
