@@ -95,9 +95,9 @@
           <header class="card__header">
             <div class="card__title-group">
               <div class="icon-chip">
-                <img src="/assets/icons/calendar.svg" alt="Посевы декабря" class="w-6 h-6" />
+                <img src="/assets/icons/calendar.svg" alt="Посевы месяца" class="w-6 h-6" />
               </div>
-              <h3 class="card__title">Посевы декабря</h3>
+              <h3 class="card__title"><span id="planting-title">Посевы месяца</span></h3>
             </div>
           </header>
           <div class="card__body">
@@ -109,10 +109,27 @@
 
       <section data-screen="calendar" class="screen hidden" aria-labelledby="calendar-heading">
         <h2 id="calendar-heading" class="screen-title">Календарь</h2>
-        <div class="card">
+        <div class="card" id="calendar-card">
+          <header class="calendar-head" aria-live="polite">
+            <div class="calendar-head__nav">
+              <button type="button" class="calendar-head__btn" id="calendar-month-prev" aria-label="Предыдущий месяц">◀︎</button>
+              <div id="calendar-title" class="calendar-head__title">Декабрь 2025</div>
+              <button type="button" class="calendar-head__btn" id="calendar-month-next" aria-label="Следующий месяц">▶︎</button>
+            </div>
+            <button type="button" class="btn-secondary calendar-head__today" id="calendar-today">Сегодня</button>
+          </header>
           <div class="card__body">
-            <div class="skeleton h-32" id="calendar-skeleton"></div>
-            <div id="calendar-grid" class="calendar-grid hidden" aria-live="polite"></div>
+            <div class="calendar-stage" id="calendar-stage">
+              <div class="skeleton h-40" id="calendar-skeleton"></div>
+              <div id="calendar-flip" class="calendar-flip hidden" aria-live="polite">
+                <div id="calendar-stack" class="calendar-flip__stack"></div>
+                <div class="calendar-flip__controls">
+                  <button type="button" class="calendar-flip__arrow" id="calendar-day-prev" aria-label="Предыдущий день">◀︎</button>
+                  <div id="calendar-day-label" class="calendar-flip__label">1 января</div>
+                  <button type="button" class="calendar-flip__arrow" id="calendar-day-next" aria-label="Следующий день">▶︎</button>
+                </div>
+              </div>
+            </div>
             <div id="calendar-legend" class="legend hidden">
               <span><span class="badge-best">Лучшие</span> — самые благоприятные</span>
               <span><span class="badge-good">Хорошие</span> — благоприятные</span>

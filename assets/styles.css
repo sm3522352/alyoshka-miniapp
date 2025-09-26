@@ -289,6 +289,263 @@ a.btn-secondary {
   color: #0F172A;
 }
 
+.calendar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 20px 0;
+  min-height: 88px;
+}
+
+.calendar-head__nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1 1 auto;
+}
+
+.calendar-head__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  border: 1px solid #A7F3D0;
+  background: #ECFDF5;
+  color: #047857;
+  font-size: 20px;
+  font-weight: 600;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.calendar-head__btn:hover {
+  background: #D1FAE5;
+}
+
+.calendar-head__btn:active {
+  transform: scale(0.95);
+}
+
+.calendar-head__btn[data-loading='1'] {
+  color: transparent;
+  pointer-events: none;
+}
+
+.calendar-head__btn[data-loading='1']::after {
+  content: '…';
+  color: #047857;
+  font-weight: 600;
+}
+
+.calendar-head__title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #0F172A;
+  min-width: 160px;
+}
+
+.calendar-head__today {
+  white-space: nowrap;
+}
+
+.calendar-stage {
+  position: relative;
+  min-height: 340px;
+}
+
+.calendar-flip {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.calendar-flip__stack {
+  position: relative;
+  min-height: 280px;
+  perspective: 1200px;
+}
+
+.flip-card {
+  position: absolute;
+  inset: 0;
+  transform-origin: top center;
+  transform: translate3d(0, calc(var(--offset, 0) * 8px), calc(var(--offset, 0) * -1px))
+    rotateX(calc(var(--offset, 0) * -7deg));
+  transition: transform 0.45s ease, opacity 0.35s ease;
+  opacity: calc(1 - clamp(0, (var(--offset, 0) + 1) * 0.18, 0.75));
+  z-index: calc(200 - var(--offset, 0));
+  pointer-events: none;
+}
+
+.flip-card.is-active {
+  pointer-events: auto;
+}
+
+.flip-card.is-past {
+  opacity: 0;
+}
+
+.flip-card__paper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #ffffff;
+  border-radius: 24px;
+  box-shadow: 0 16px 48px rgba(4, 120, 87, 0.18);
+  overflow: hidden;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.flip-card__band {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  background: linear-gradient(135deg, #047857, #0f766e);
+  color: #ffffff;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.flip-card__band::before,
+.flip-card__band::after {
+  content: '';
+  position: absolute;
+  bottom: -12px;
+  width: 20px;
+  height: 20px;
+  background: radial-gradient(circle at center, #CBD5F5 0, #CBD5F5 45%, transparent 46%);
+}
+
+.flip-card__band::before {
+  left: 36px;
+}
+
+.flip-card__band::after {
+  right: 36px;
+}
+
+.flip-card__day {
+  font-size: 2.75rem;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.flip-card__weekday {
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.flip-card__body {
+  flex: 1 1 auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.flip-card__meta {
+  display: grid;
+  gap: 4px;
+  color: #1e293b;
+  font-size: 0.95rem;
+}
+
+.flip-card__badge {
+  display: inline-flex;
+  align-self: flex-start;
+}
+
+.flip-card__note {
+  font-size: 0.95rem;
+  line-height: 1.4;
+  color: #475569;
+}
+
+.flip-card__actions {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.flip-card__more {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #047857;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.flip-card__more:hover {
+  color: #0f766e;
+}
+
+.flip-card__voice {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  font-size: 18px;
+  color: #047857;
+}
+
+.calendar-flip__controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.calendar-flip__arrow {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: 1px solid #bae6fd;
+  background: #f0f9ff;
+  color: #0f172a;
+  font-size: 18px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s ease;
+}
+
+.calendar-flip__arrow:active {
+  transform: scale(0.95);
+}
+
+.calendar-flip__label {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.calendar-flip__arrow[disabled] {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flip-card {
+    transition: opacity 0.2s ease;
+    transform: translateY(calc(var(--offset, 0) * 10px));
+  }
+}
+
 .sheet{ @apply fixed inset-x-0 bottom-0 bg-white rounded-t-2xl shadow-2xl p-4 border-t border-emerald-100; }
 .sheet {
   position: fixed;
