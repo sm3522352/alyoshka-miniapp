@@ -12,18 +12,18 @@
 </head>
 <body>
   <div id="root" class="app-shell">
-    <header class="app-header" aria-labelledby="app-title">
-      <div class="app-header__icon" aria-hidden="true">
-        <img src="/assets/icons/sprout.svg" alt="" />
-      </div>
-      <div>
-        <h1 id="app-title" class="app-title">Алёшка</h1>
-        <p class="app-subtitle">Тихий помощник для сада и дома</p>
-      </div>
-    </header>
+    <main id="pages" class="pages" tabindex="-1">
+      <header class="app-header" aria-labelledby="app-title">
+        <div class="app-header__icon" aria-hidden="true">
+          <img src="/assets/icons/sprout.svg" alt="" />
+        </div>
+        <div>
+          <h1 id="app-title" class="app-title">Алёшка</h1>
+          <p class="app-subtitle">Тихий помощник для сада и дома</p>
+        </div>
+      </header>
 
-    <main id="page" class="page" tabindex="-1">
-      <section data-screen="home" class="view active" aria-labelledby="home-heading">
+      <section id="view-home" data-screen="home" class="view active" aria-labelledby="home-heading">
         <h2 id="home-heading" class="sr-only">Дом</h2>
         <div class="stack stack-lg">
           <article class="card" data-card="lunar">
@@ -76,7 +76,7 @@
         </div>
       </section>
 
-      <section data-screen="feed" class="view hidden" aria-labelledby="feed-heading">
+      <section id="view-feed" data-screen="feed" class="view" aria-labelledby="feed-heading">
         <h2 id="feed-heading" class="section-title">Лента</h2>
         <article class="card">
           <div class="card__body stack">
@@ -98,7 +98,7 @@
         </article>
       </section>
 
-      <section data-screen="clubs" class="view hidden" aria-labelledby="clubs-heading">
+      <section id="view-clubs" data-screen="clubs" class="view" aria-labelledby="clubs-heading">
         <h2 id="clubs-heading" class="section-title">Кружки</h2>
         <article class="card" aria-labelledby="club-create-title">
           <header class="card__header">
@@ -173,7 +173,7 @@
         </div>
       </article>
 
-      <section data-screen="calendar" class="view hidden" aria-labelledby="calendar-heading">
+      <section id="view-calendar" data-screen="calendar" class="view" aria-labelledby="calendar-heading">
         <h2 id="calendar-heading" class="section-title">Календарь</h2>
         <article class="card" id="calendar-card">
           <header class="calendar-head" aria-live="polite">
@@ -206,7 +206,7 @@
         </article>
       </section>
 
-      <section data-screen="important" class="view hidden" aria-labelledby="important-heading">
+      <section id="view-important" data-screen="important" class="view" aria-labelledby="important-heading">
         <h2 id="important-heading" class="section-title">Важно</h2>
         <div id="important-list" class="stack" aria-live="polite">
           <div class="card">
@@ -217,7 +217,7 @@
         </div>
       </section>
 
-      <section data-screen="profile" class="view hidden" aria-labelledby="profile-heading">
+      <section id="view-profile" data-screen="profile" class="view" aria-labelledby="profile-heading">
         <h2 id="profile-heading" class="section-title">Профиль</h2>
         <form id="profile-form" class="stack" novalidate>
           <div class="card">
@@ -314,24 +314,24 @@
       </section>
     </main>
 
-    <nav id="tabbar" class="tabbar" aria-label="Основная навигация">
-      <button class="tab active" data-tab="home">
+    <nav id="tabbar" class="tabbar" role="tablist" aria-label="Нижняя навигация">
+      <button type="button" class="tab active" data-tab="home" role="tab" aria-selected="true">
         <img src="/assets/icons/home.svg" alt="Дом" />
         <span>Дом</span>
       </button>
-      <button class="tab" data-tab="calendar">
+      <button type="button" class="tab" data-tab="calendar" role="tab" aria-selected="false">
         <img src="/assets/icons/calendar.svg" alt="Календарь" />
         <span>Календарь</span>
       </button>
-      <button class="tab" data-tab="feed">
+      <button type="button" class="tab" data-tab="feed" role="tab" aria-selected="false">
         <img src="/assets/icons/plant.svg" alt="Лента" />
         <span>Лента</span>
       </button>
-      <button class="tab" data-tab="clubs">
+      <button type="button" class="tab" data-tab="clubs" role="tab" aria-selected="false">
         <img src="/assets/icons/garden.svg" alt="Кружки" />
         <span>Кружки</span>
       </button>
-      <button class="tab" data-tab="profile">
+      <button type="button" class="tab" data-tab="profile" role="tab" aria-selected="false">
         <img src="/assets/icons/user.svg" alt="Профиль" />
         <span>Профиль</span>
       </button>
